@@ -14,19 +14,22 @@ public class ThrowSimulator : MonoBehaviour
     [SerializeField] private Transform _rim;
     
     [Header("Config")]
-    [Header("Throw")]
-    [SerializeField] private float _throwForce;
-    [SerializeField] private float _throwDuration;
-    [Header("Backboard to frame")]
-    [SerializeField] private float _bounceForce;
-    [SerializeField] private float _bounceDuration;
-    [Header("Frame to loop")]
-    [SerializeField] private float _rimToScoreForce = 0.1f;
+    [Header("Base - Throw")]
+    [SerializeField] private float _throwForce = 1.2f;
+    [SerializeField] private float _throwDuration = 0.8f;
+    [Header("Accurate - Backboard to frame")]
+    [SerializeField] private float _bounceForce = 0.3f;
+    [SerializeField] private float _bounceDuration = 0.4f;
+    [Header("Accurate - Frame to loop")]
+    [SerializeField] private float _rimToScoreForce = 0.2f;
     [SerializeField] private float _rimToScoreDuration = 0.4f;
-    [SerializeField] private float _rimBounceOffset = 0.1f;
-    [Header("Backboard to ground")]
-    [SerializeField] private float _bounceToGroundForce;
-    [SerializeField] private float _bounceToGroundDuration;
+    [SerializeField] private float _rimBounceOffset = 0.12f;
+    [Header("Fail - Backboard to ground")]
+    [SerializeField] private float _bounceToGroundForce = 1.6f;
+    [SerializeField] private float _bounceToGroundDuration = 0.6f;
+    [Header("Fail - Throw to ground")]
+    [SerializeField] private float _throwToGroundForce;
+    [SerializeField] private float _throwToGroundDuration;
     
     [Header("Targets")]
     [SerializeField] private Transform _leftBackboardArea;
@@ -39,13 +42,20 @@ public class ThrowSimulator : MonoBehaviour
     
     [Header("Runtime Settings")]
     [SerializeField] private ThrowPosition _position;
-    [SerializeField] private float _currentThrowScore;
-    [SerializeField] private ThrowScoreRange _directScoreRange;
-    [SerializeField] private ThrowScoreRange _backboardScoreRange;
     [SerializeField] private float _accurateThreshold;
-    
+
+    private void OnEnable()
+    {
+        GameModeEvents.OnThrowAttempt += Throw;
+    }
+
+    private void OnDisable()
+    {
+        GameModeEvents.OnThrowAttempt -= Throw;
+    }
+
     [Button]
-    public void Throw()
+    public void Throw(float score)
     {
         _ballBody.velocity = Vector3.zero;
         _ballBody.isKinematic = true;
@@ -53,7 +63,7 @@ public class ThrowSimulator : MonoBehaviour
         
         _ballTransform.position = _start.position;
 
-        ThrowResult result = GetThrowResult(_currentThrowScore);
+        ThrowResult result = GetThrowResult(score);
         Debug.Log($"Throw result | Type: {result.Type} | Accuracy: {result.Accuracy}");
         ComputeThrow(GetThrowPath(result.Type, _position, result.Accuracy));
     }
@@ -63,38 +73,40 @@ public class ThrowSimulator : MonoBehaviour
         ThrowType type = ThrowType.Direct;
         ThrowAccuracy accuracy = ThrowAccuracy.Fail;
 
-        if (_throwScore >= _directScoreRange.Min && _throwScore <= _directScoreRange.Max)
+        ScoreData currentScoreData = GameModeServices.GameModeSettings.GetScoreData(GameModeServices.CurrentPhase);
+        
+        if (_throwScore >= currentScoreData.DirectScoreInfo.Min && _throwScore <= currentScoreData.DirectScoreInfo.Max)
         {
             type = ThrowType.Direct;
             accuracy = ThrowAccuracy.Perfect;
         }
-        else if (_throwScore >= _backboardScoreRange.Min && _throwScore <= _backboardScoreRange.Max)
+        else if (_throwScore >= currentScoreData.BackboardScoreInfo.Min && _throwScore <= currentScoreData.BackboardScoreInfo.Max)
         {
             type = ThrowType.Backboard;
             accuracy = ThrowAccuracy.Perfect;
         }
         else
         {
-            if (Mathf.Abs(_directScoreRange.Min - _throwScore) <= _accurateThreshold
-                || Mathf.Abs(_directScoreRange.Max - _throwScore) <= _accurateThreshold)
+            if (Mathf.Abs(currentScoreData.DirectScoreInfo.Min - _throwScore) <= _accurateThreshold
+                || Mathf.Abs(currentScoreData.DirectScoreInfo.Max - _throwScore) <= _accurateThreshold)
             {                    
                 type = ThrowType.Direct;
                 accuracy = ThrowAccuracy.Accurate;
             }
-            else if (Mathf.Abs(_backboardScoreRange.Min - _throwScore) <= _accurateThreshold
-                     || Mathf.Abs(_backboardScoreRange.Max - _throwScore) <= _accurateThreshold)
+            else if (Mathf.Abs(currentScoreData.BackboardScoreInfo.Min - _throwScore) <= _accurateThreshold
+                     || Mathf.Abs(currentScoreData.BackboardScoreInfo.Max - _throwScore) <= _accurateThreshold)
             {
                 type = ThrowType.Backboard;
                 accuracy = ThrowAccuracy.Accurate;
             }
             else
             {
-                if (_throwScore > _directScoreRange.Max)
+                if (_throwScore > currentScoreData.DirectScoreInfo.Max)
                 {
                     type = ThrowType.Backboard;
                     accuracy = ThrowAccuracy.Fail;
                 }
-                else if (_throwScore < _directScoreRange.Min)
+                else if (_throwScore < currentScoreData.DirectScoreInfo.Min)
                 {
                     type = ThrowType.Direct;
                     accuracy = ThrowAccuracy.Fail;
@@ -215,8 +227,8 @@ public class ThrowSimulator : MonoBehaviour
                         break;
                     
                     case ThrowAccuracy.Fail:
-                        ThrowPathStep throwToGround = new ThrowPathStep(_bounceToGroundForce, _bounceToGroundDuration, groundFailAreaTargetPos);
-                        path.Steps.Add(throwToGround);
+                        ThrowPathStep backboardToGround = new ThrowPathStep(_bounceToGroundForce, _bounceToGroundDuration, groundFailAreaTargetPos);
+                        path.Steps.Add(backboardToGround);
                         break;
                 }
                 break;
@@ -230,14 +242,14 @@ public class ThrowSimulator : MonoBehaviour
                         break;
             
                     case ThrowAccuracy.Accurate:
-                        ThrowPathStep throwToRim = new ThrowPathStep(_bounceForce, _bounceDuration, randomLoopFramePos);
+                        ThrowPathStep throwToRim = new ThrowPathStep(_throwForce, _throwDuration, randomLoopFramePos);
                         path.Steps.Add(throwToRim);
                         ThrowPathStep rimToScore = new ThrowPathStep(_rimToScoreForce, _rimToScoreDuration, _scoreTarget.position);
                         path.Steps.Add(rimToScore);
                         break;
                     
                     case ThrowAccuracy.Fail:
-                        ThrowPathStep throwToGround = new ThrowPathStep(_throwForce, _throwDuration, groundFailAreaTargetPos);
+                        ThrowPathStep throwToGround = new ThrowPathStep(_throwToGroundForce, _throwToGroundDuration, groundFailAreaTargetPos);
                         path.Steps.Add(throwToGround);
                         break;
                 }
