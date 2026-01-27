@@ -16,7 +16,7 @@ public class GameModeManager : MonoBehaviour
 
     private void Awake()
     {
-        GameModeServices.GameModeSettings = _gameModeSettings;
+        RuntimeServices.GameModeService.GameModeSettings = _gameModeSettings;
     }
 
     private void Start()
@@ -27,13 +27,13 @@ public class GameModeManager : MonoBehaviour
     private void GenerateScores(GameModePhase gameModePhase)
     {
         ScoreData scoreData = _gameModeSettings.GetScoreData(gameModePhase);
-        GameModeEvents.OnScoresGenerated?.Invoke(scoreData.DirectScoreInfo, scoreData.BackboardScoreInfo);
+        GameModeEvents.TriggerScoreGenerated(scoreData.DirectScoreInfo, scoreData.BackboardScoreInfo);
     }
 
     private void UpdateGamePhase(GameModePhase gameModePhase)
     {
         _currentPhase = gameModePhase;
-        GameModeServices.CurrentPhase = _currentPhase;
+        RuntimeServices.GameModeService.CurrentPhase = _currentPhase;
         GenerateScores(_currentPhase);
     }
 
@@ -44,16 +44,4 @@ public class GameModeManager : MonoBehaviour
     }
 }
 
-public static class GameModeServices
-{
-    public static GameModeSettings GameModeSettings;
-    public static GameModePhase CurrentPhase;
-}
-
-public enum GameModePhase
-{
-    Early,
-    Mid,
-    Late,
-}
 

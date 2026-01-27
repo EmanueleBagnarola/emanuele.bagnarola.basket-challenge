@@ -86,7 +86,7 @@ public class ThrowSliderGUI : MonoBehaviour
     /// </summary>
     private void ThrowAttempt()
     {
-        GameModeEvents.OnThrowAttempt?.Invoke(_slider.value);
+        GameModeEvents.TriggerThrowAttempt(_slider.value);
     }
 
     private void PlaceLabel(int _scoreMin, int _scoreMax, RectTransform _labelRect)

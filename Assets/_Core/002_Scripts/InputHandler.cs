@@ -58,7 +58,7 @@ public class InputHandler : MonoBehaviour
             return;
         
         Vector2 currentPos = _pointerPosition.ReadValue<Vector2>();
-        InputEvents.OnPointerDrag.Invoke(currentPos, _startPosition);
+        InputEvents.TriggerPointerDrag(currentPos, _startPosition);
     }
 
     private void OnPressStarted(InputAction.CallbackContext ctx)
@@ -71,6 +71,6 @@ public class InputHandler : MonoBehaviour
     {
         _pressStarted = false;
         Vector2 pos = _pointerPosition.ReadValue<Vector2>();
-        InputEvents.OnPointerUp?.Invoke(pos);
+        InputEvents.TriggerPointerUp(pos);
     }
 }
