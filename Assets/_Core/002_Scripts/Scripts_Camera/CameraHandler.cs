@@ -8,7 +8,7 @@ public class CameraHandler : MonoBehaviour
 {
     [Header("Config")]
     [SerializeField] private CinemachineVirtualCamera _baseCamera;
-    [SerializeField] private CinemachineVirtualCamera _throwCamera;
+    [SerializeField] private CinemachineVirtualCamera _shootCamera;
     
     [Header("Shake settings")]
     [SerializeField] private CinemachineShake _shakeController;
@@ -17,38 +17,43 @@ public class CameraHandler : MonoBehaviour
 
     private void OnEnable()
     {
-        GameModeEvents.OnThrowAttempt += OnThrowAttempt;
-        GameModeEvents.OnScore += OnScore;
+        GameModeEvents.OnShootAttempt += OnShootAttempt;
+        GameModeEvents.OnShootCompleted += OnShootCompleted;
+        GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
     }
 
     private void OnDisable()
     {
-        GameModeEvents.OnThrowAttempt -= OnThrowAttempt;
-        GameModeEvents.OnScore -= OnScore;
+        GameModeEvents.OnShootAttempt -= OnShootAttempt;
+        GameModeEvents.OnShootCompleted -= OnShootCompleted;
+        GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
-    [Button]
-    public void OnThrowCamera()
+    private void HandleShootCamera()
     {
         _baseCamera.Priority = 0;
-        _throwCamera.Priority = 1;
+        _shootCamera.Priority = 1;
     }
 
-    [Button]
-    public void ResetCameras()
+    private void ResetCameras()
     {
         _baseCamera.Priority = 1;
-        _throwCamera.Priority = 0;
+        _shootCamera.Priority = 0;
     }
 
-    private void OnThrowAttempt(float throwScore)
+    private void OnShootAttempt(float shootVelocity)
     {
-        OnThrowCamera();
+        HandleShootCamera();
     }
 
-    private void OnScore(int score, ThrowResult result)
+    private void OnShootPositionUpdated()
     {
-        if(result.Accuracy != ThrowAccuracy.Perfect)
+        ResetCameras();
+    }
+
+    private void OnShootCompleted(ShootResult result)
+    {
+        if(result.Accuracy != ShootAccuracy.Perfect)
             return;
         
         _shakeController.Shake(_shakeIntensity, _shakeDuration);

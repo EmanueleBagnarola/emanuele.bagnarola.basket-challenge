@@ -8,41 +8,40 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameModeSettings", menuName = "ScriptableObjects/GameModeSettings")]
 public class GameModeSettings : ScriptableObject
 {
-    [SerializeField] private ScoreData earlyScoreData;
-    [SerializeField] private ScoreData midScoreData;
-    [SerializeField] private ScoreData lateScoreData;
+    public float NextShootWaitTime => _nextShootWaitTime;
     
-    public ScoreData GetScoreData(GameModePhase gameModePhase)
-    {
-        switch (gameModePhase)
-        {
-            case GameModePhase.Early:
-                return earlyScoreData;
-            
-            case GameModePhase.Mid:
-                return midScoreData;
-            
-            case GameModePhase.Late:
-                return lateScoreData;
-        }
+    [Header("Gameplay config")]
+    [SerializeField] private float _nextShootWaitTime;
 
-        return earlyScoreData;
+    [Header("Shoot velocity config")]
+    [SerializeField, NonReorderable] private List<ShootConfigByPhase> shootConfigs = new List<ShootConfigByPhase>();
+    
+    public ShootVelocityConfigByType GetShootVelocityConfig(ShootType shootType)
+    {
+        ShootConfigByPhase shootConfigByPhase = shootConfigs.Find(t => t.Phase == RuntimeServices.GameModeService.CurrentPhase);
+
+        return shootConfigByPhase.VelocityConfigs.Find(s => s.ShootType == shootType);
     }
 }
 
 [System.Serializable]
-public struct ScoreData
+public struct ShootConfigByPhase
 {
-    public ScoreInfo DirectScoreInfo;
-    public ScoreInfo BackboardScoreInfo;
+    public List<ShootVelocityConfigByType> VelocityConfigs => velocityConfigs;
+    public GameModePhase Phase => phase;
+    
+    [SerializeField] private GameModePhase phase;
+    [SerializeField, NonReorderable] private List<ShootVelocityConfigByType> velocityConfigs;
 }
 
 [System.Serializable]
-public struct ScoreInfo
+public struct ShootVelocityConfigByType
 {
-    [Range(0, GameModeEnv.MAX_THROW_SCORE)]
+    public ShootType ShootType;
+    
+    [Range(0, GameModeEnv.MAX_SHOOT_VELOCITY)]
     public int Min;
-    [Range(0, GameModeEnv.MAX_THROW_SCORE)]
+    [Range(0, GameModeEnv.MAX_SHOOT_VELOCITY)]
     public int Max;
 }
 

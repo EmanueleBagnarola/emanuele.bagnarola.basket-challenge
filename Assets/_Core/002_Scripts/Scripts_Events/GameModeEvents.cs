@@ -4,29 +4,63 @@ using UnityEngine;
 
 public static class GameModeEvents
 {
-    public delegate void OnScoresGeneratedHandler(ScoreInfo directScoreLimits, ScoreInfo backboardScoreLimits);
-    public static event OnScoresGeneratedHandler OnScoresGenerated;
+    public delegate void OnScoresGeneratedHandler(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits);
+    public static event OnScoresGeneratedHandler OnVelocityTargetsGenerated;
     
-    public delegate void OnThrowAttemptHandler(float throwScore);
-    public static event OnThrowAttemptHandler OnThrowAttempt;
+    public delegate void OnShootAttemptHandler(float shootVelocity);
+    public static event OnShootAttemptHandler OnShootAttempt;
+
+    public delegate void OnShootTargetSetHandler(Vector3 shootTarget);
+    public static event OnShootTargetSetHandler OnShootTargetSet;
+
+    public delegate void OnShootCompletedHandler(ShootResult shootResult);
+
+    public static event OnShootCompletedHandler OnShootCompleted;
     
-    public delegate void OnScoreHandler(int score, ThrowResult throwResult);
+    public delegate void OnScoreHandler(int score);
     public static event OnScoreHandler OnScore;
+
+    public delegate void OnCallNewShootPositionHandler();
+
+    public static event OnCallNewShootPositionHandler OnCallNewPosition;
+    
+    public delegate void OnShootPositionUpdatedHandler();
+    public static event OnShootPositionUpdatedHandler OnShootPositionUpdated;
 
     // --- Event Triggers ---
     
-    public static void TriggerScoreGenerated(ScoreInfo directScoreLimits, ScoreInfo backboardScoreLimits)
+    public static void TriggerUpdateShootVelocityTargets(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits)
     {
-        OnScoresGenerated?.Invoke(directScoreLimits, backboardScoreLimits);
+        OnVelocityTargetsGenerated?.Invoke(directScoreLimits, backboardScoreLimits);
     }
 
-    public static void TriggerThrowAttempt(float throwScore)
+    public static void TriggerShootAttempt(float shootVelocity)
     {
-        OnThrowAttempt?.Invoke(throwScore);
+        OnShootAttempt?.Invoke(shootVelocity);
     }
 
-    public static void TriggerScore(int score, ThrowResult throwResult)
+    public static void TriggerShootTargetSet(Vector3 shootTarget)
     {
-        OnScore?.Invoke(score, throwResult);
+        OnShootTargetSet?.Invoke(shootTarget);
+    }
+
+    public static void TriggerShootCompleted(ShootResult result)
+    {
+        OnShootCompleted?.Invoke(result);
+    }
+
+    public static void TriggerScore(int score)
+    {
+        OnScore?.Invoke(score);
+    }
+
+    public static void TriggerCallNewPosition()
+    {
+        OnCallNewPosition?.Invoke();
+    }
+
+    public static void TriggerShootPositionUpdated()
+    {
+        OnShootPositionUpdated?.Invoke();
     }
 }

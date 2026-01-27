@@ -12,24 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eb778af140e38c48bff01e1a0a18976, type: 3}
   m_Name: GameModeSettings
   m_EditorClassIdentifier: 
-  earlyScoreData:
-    DirectScoreInfo:
+  _nextShootWaitTime: 0.7
+  shootConfigs:
+  - phase: 0
+    velocityConfigs:
+    - ShootType: 0
       Min: 35
       Max: 45
-    BackboardScoreInfo:
+    - ShootType: 1
       Min: 60
       Max: 65
-  midScoreData:
-    DirectScoreInfo:
+  - phase: 1
+    velocityConfigs:
+    - ShootType: 0
       Min: 45
       Max: 55
-    BackboardScoreInfo:
+    - ShootType: 1
       Min: 70
       Max: 75
-  lateScoreData:
-    DirectScoreInfo:
+  - phase: 2
+    velocityConfigs:
+    - ShootType: 0
       Min: 55
       Max: 65
-    BackboardScoreInfo:
+    - ShootType: 1
       Min: 80
       Max: 85

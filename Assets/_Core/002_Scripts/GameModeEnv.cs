@@ -4,29 +4,29 @@ using UnityEngine;
 
 public static class GameModeEnv 
 {
-    public const int MAX_THROW_SCORE = 100;
+    public const int MAX_SHOOT_VELOCITY = 100;
 }
 
-public enum ThrowType
+public enum ShootType
 {
     Direct,
     Backboard,
 }
 
-public enum ThrowStrength
+public enum ShootVelocityType
 {
     Weak,
     Medium,
     Strong
 }
 
-public enum ThrowPosition
+public enum ShootDirection
 {
     Left,
     Right
 }
 
-public enum ThrowAccuracy
+public enum ShootAccuracy
 {
     Perfect,
     Accurate,
