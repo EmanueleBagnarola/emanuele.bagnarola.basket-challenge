@@ -23,7 +23,7 @@ public class ScoreHandler : MonoBehaviour
     /// <param name="result"></param>
     private void OnShootCompleted(ShootResult result)
     {
-        int basicScore = RuntimeServices.GameModeService.GameModeSettings.GetBasicScoreByAccuracy(result.Accuracy);
+        int basicScore = RuntimeServices.GameModeService.GameModeSettings.GetBasicScoreByAccuracy(result.Accuracy, result.Type);
         Debug.Log($"SCORE: {basicScore}");
 
         int totalScore = basicScore;

@@ -30,13 +30,13 @@ public class GameModeSettings : ScriptableObject
         return shootConfigByPhase.VelocityConfigs.Find(s => s.ShootType == shootType);
     }
 
-    public int GetBasicScoreByAccuracy(ShootAccuracy accuracy)
+    public int GetBasicScoreByAccuracy(ShootAccuracy accuracy, ShootType type)
     {
         int score = 0;
 
         foreach (BasicScoreConfig basicScoreConfig in basicScoreConfigs)
         {
-            if (basicScoreConfig.Accuracy == accuracy)
+            if (basicScoreConfig.Accuracy == accuracy && basicScoreConfig.Type == type)
             {
                 score = basicScoreConfig.Score;
                 break;
@@ -73,5 +73,6 @@ public class BasicScoreConfig
 {
     public int Score;
     public ShootAccuracy Accuracy;
+    public ShootType Type;
 }
 

@@ -73,7 +73,7 @@ public class ShootHandler : MonoBehaviour
         else if (shootVelocity >= backboardVelocityConfig.Min && shootVelocity <= backboardVelocityConfig.Max)
         {
             type = ShootType.Backboard;
-            accuracy = ShootAccuracy.Accurate;
+            accuracy = ShootAccuracy.Perfect;
         }
         else
         {

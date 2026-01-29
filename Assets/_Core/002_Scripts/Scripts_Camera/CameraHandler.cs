@@ -56,7 +56,7 @@ public class CameraHandler : MonoBehaviour
 
     private void OnShootCompleted(ShootResult result)
     {
-        if(result.Accuracy != ShootAccuracy.Perfect)
+        if(result.Accuracy != ShootAccuracy.Perfect || result.Type == ShootType.Backboard)
             return;
         
         _shakeController.Shake(_shakeIntensity, _shakeDuration);
