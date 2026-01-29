@@ -13,21 +13,7 @@ public class ShootHandler : MonoBehaviour
     [SerializeField] private Transform _shootStartPos;
     
     [Header("Shoot Settings")]
-    [Header("Base - Shoot")]
-    [SerializeField] private float _shootForce = 0.9f;
-    [SerializeField] private float _shootDuration = 0.9f;
-    [Header("Accurate - Backboard to frame")]
-    [SerializeField] private float _bounceForce = 0.3f;
-    [SerializeField] private float _bounceDuration = 0.4f;
-    [Header("Accurate - Frame to loop")]
-    [SerializeField] private float _rimToScoreForce = 0.2f;
-    [SerializeField] private float _rimToScoreDuration = 0.4f;
-    [Header("Fail - Backboard to ground")]
-    [SerializeField] private float _bounceToGroundForce = 1.6f;
-    [SerializeField] private float _bounceToGroundDuration = 0.6f;
-    [Header("Fail - Shoot to ground")]
-    [SerializeField] private float _shootToGroundForce = 3;
-    [SerializeField] private float _shootToGroundDuration = 1;
+    [SerializeField] private ShootSettings _shootSettings;
 
     [Header("Bounce physics settings")]
     [SerializeField] private float _bounceForceMultiplier = 1;
@@ -42,10 +28,11 @@ public class ShootHandler : MonoBehaviour
     
     [Header("Runtime Settings")]
     [SerializeField] private ShootDirection _position;
-    [SerializeField] private float _accurateThreshold;
 
     private ShootResult _currentShootResult;
-    
+    private Vector3 _lastBouncePosition;
+    private bool _lastBounceFound = false;
+
     private void Awake()
     {
         GameModeEvents.OnShootAttempt += Shoot;
@@ -63,14 +50,14 @@ public class ShootHandler : MonoBehaviour
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
     
-    private void Shoot(float shootVelocity)
+    private void Shoot(float shootVelocity, bool isHumanPlayer)
     {
-        ShootResult result = GetShootResult(shootVelocity);
+        ShootResult result = GetShootResult(shootVelocity, isHumanPlayer);
         Debug.Log($"ShootResult | Type: {result.Type} | Accuracy: {result.Accuracy} | Strength: {result.Strength}");
         ComputeShoot(GetShootPath(result.Type, _position, result.Accuracy, result.Strength));
     }
 
-    private ShootResult GetShootResult(float shootVelocity)
+    private ShootResult GetShootResult(float shootVelocity, bool isHumanPlayer)
     {
         ShootType type = ShootType.Direct;
         ShootAccuracy accuracy = ShootAccuracy.Fail;
@@ -86,18 +73,18 @@ public class ShootHandler : MonoBehaviour
         else if (shootVelocity >= backboardVelocityConfig.Min && shootVelocity <= backboardVelocityConfig.Max)
         {
             type = ShootType.Backboard;
-            accuracy = ShootAccuracy.Perfect;
+            accuracy = ShootAccuracy.Accurate;
         }
         else
         {
-            if (Mathf.Abs(directVelocityConfig.Min - shootVelocity) <= _accurateThreshold
-                || Mathf.Abs(directVelocityConfig.Max - shootVelocity) <= _accurateThreshold)
+            if (Mathf.Abs(directVelocityConfig.Min - shootVelocity) <= _shootSettings.DirectAccuracyThreshold
+                || Mathf.Abs(directVelocityConfig.Max - shootVelocity) <= _shootSettings.DirectAccuracyThreshold)
             {                    
                 type = ShootType.Direct;
                 accuracy = ShootAccuracy.Accurate;
             }
-            else if (Mathf.Abs(backboardVelocityConfig.Min - shootVelocity) <= _accurateThreshold
-                     || Mathf.Abs(backboardVelocityConfig.Max - shootVelocity) <= _accurateThreshold)
+            else if (Mathf.Abs(backboardVelocityConfig.Min - shootVelocity) <= _shootSettings.BackboardAccuracyThreshold
+                     || Mathf.Abs(backboardVelocityConfig.Max - shootVelocity) <= _shootSettings.BackboardAccuracyThreshold)
             {
                 type = ShootType.Backboard;
                 accuracy = ShootAccuracy.Accurate;
@@ -117,7 +104,7 @@ public class ShootHandler : MonoBehaviour
             }
         }
 
-        _currentShootResult = new ShootResult(type, accuracy, GetShootVelocityType(shootVelocity));
+        _currentShootResult = new ShootResult(type, accuracy, GetShootVelocityType(shootVelocity), isHumanPlayer);
 
         return _currentShootResult;
     }
@@ -141,19 +128,16 @@ public class ShootHandler : MonoBehaviour
         ExecuteStep(path, 0);
     }
 
-    private Vector3 lastBouncePosition;
-    bool lastBounceFound = false;
-
     private void ExecuteStep(ShootPath path, int index)
     {
-        if (!lastBounceFound)
+        if (!_lastBounceFound)
         {
-            lastBouncePosition = _playerTransform.transform.position;
+            _lastBouncePosition = _playerTransform.transform.position;
         }
         
         if (index >= path.Steps.Count)
         {
-            EnablePhysics(lastBouncePosition);
+            EnablePhysics(_lastBouncePosition);
             
             GameModeEvents.TriggerShootCompleted(_currentShootResult);
             return;
@@ -193,8 +177,8 @@ public class ShootHandler : MonoBehaviour
     {
         if (step.LastBounce)
         {
-            lastBouncePosition = step.Target;
-            lastBounceFound = true;
+            _lastBouncePosition = step.Target;
+            _lastBounceFound = true;
         }
         
         Ease ease = _firstStep ? _shootEase : _bounceEase;  
@@ -208,7 +192,7 @@ public class ShootHandler : MonoBehaviour
         _ballBody.AddForce((_ballBody.transform.position - lastBounceDirection).normalized + Vector3.down * _bounceForceMultiplier, ForceMode.Impulse);
     }
     
-     private ShootPath GetShootPath(ShootType shootType, ShootDirection shootDirection, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType)
+    private ShootPath GetShootPath(ShootType shootType, ShootDirection shootDirection, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType)
     {
         ShootPath path = new ShootPath();
 
@@ -236,17 +220,17 @@ public class ShootHandler : MonoBehaviour
                     switch (shootDirection)
                     {
                         case ShootDirection.Right:
-                            groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.RightSideGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.RightSideGroundTarget);
+                            groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.RightDirectFailGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.RightDirectFailGroundTarget);
                             break;
                 
                         case ShootDirection.Left:
-                            groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.LeftSideGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.LeftSideGroundTarget);
+                            groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.LeftDirectFailGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.LeftDirectFailGroundTarget);
                             break;
                     }
                     break;
                 
                 case ShootType.Backboard:
-                    groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.AdaptableGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.AdaptableGroundTarget);
+                    groundFailAreaTargetPos = GetRandomPointInMesh(RuntimeServices.TargetService.BackboardFailGroundTarget.GetComponent<MeshFilter>().mesh, RuntimeServices.TargetService.BackboardFailGroundTarget);
                     break;
             }
         }
@@ -254,25 +238,25 @@ public class ShootHandler : MonoBehaviour
         switch (shootType)
         {
             case ShootType.Backboard:
-                ShootPathStep baseStepToBackboard = new ShootPathStep(_shootForce, _shootDuration, backboardTargetPos, lastBounce: accuracyType == ShootAccuracy.Perfect);
+                ShootPathStep baseStepToBackboard = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, backboardTargetPos, lastBounce: accuracyType == ShootAccuracy.Perfect);
                 path.Steps.Add(baseStepToBackboard);
                 
                 switch (accuracyType)
                 {
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_bounceForce, _bounceDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, RuntimeServices.TargetService.ScoreTarget.position);
                         path.Steps.Add(shootToScore);
                         break;
-            
+                    
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_bounceForce, _bounceDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_rimToScoreForce, _rimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
                         path.Steps.Add(rimToScore);
                         break;
                     
                     case ShootAccuracy.Fail:
-                        ShootPathStep backboardToGround = new ShootPathStep(_bounceToGroundForce, _bounceToGroundDuration, groundFailAreaTargetPos);
+                        ShootPathStep backboardToGround = new ShootPathStep(_shootSettings.BounceToGroundForce, _shootSettings.BounceToGroundDuration, groundFailAreaTargetPos);
                         path.Steps.Add(backboardToGround);
                         break;
                 }
@@ -282,19 +266,19 @@ public class ShootHandler : MonoBehaviour
                 switch (accuracyType)
                 {
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootForce, _shootDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTarget.position);
                         path.Steps.Add(shootToScore);
                         break;
             
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_shootForce, _shootDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_rimToScoreForce, _rimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
                         path.Steps.Add(rimToScore);
                         break;
                     
                     case ShootAccuracy.Fail:
-                        ShootPathStep shootToGround = new ShootPathStep(_shootToGroundForce, _shootToGroundDuration, groundFailAreaTargetPos);
+                        ShootPathStep shootToGround = new ShootPathStep(_shootSettings.ShootToGroundForce, _shootSettings.ShootToGroundDuration, groundFailAreaTargetPos);
                         path.Steps.Add(shootToGround);
                         break;
                 }
@@ -382,19 +366,13 @@ public class ShootResult
     public ShootType Type;
     public ShootAccuracy Accuracy;
     public ShootVelocityType Strength;
-
-    public ShootResult(ShootType type, ShootAccuracy accuracy, ShootVelocityType strength)
+    public bool IsHumanPlayer;
+    
+    public ShootResult(ShootType type, ShootAccuracy accuracy, ShootVelocityType strength, bool isHumanPlayer)
     {
         Type = type;
         Accuracy = accuracy;
         Strength = strength;
+        IsHumanPlayer = isHumanPlayer;
     }
 }
-
-[System.Serializable]
-public class ShootVelocityRange
-{
-    public float Min;
-    public float Max;
-}
-

@@ -14,26 +14,37 @@ public class ShootSliderGUI : MonoBehaviour
 
     private float _sliderLenght;
     private bool _shootPerformed;
+    private float _currentInputTime;
+    private bool _gestureActive;
+    private bool _waitingForRelease;
+
+    private Vector2 _currentInputStartPos;
+    private Vector2 _currentInputPos;
 
     private void Awake()
     {
         InitSlider();
         
         InputEvents.OnPointerDrag += OnPointerDrag;
+        InputEvents.OnPointerDown += OnPointerDown;
         InputEvents.OnPointerUp += OnPointerUp;
 
         GameModeEvents.OnVelocityTargetsGenerated += OnVelocityTargetGenerated;
-        GameModeEvents.OnShootAttempt += OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
+    }
+
+    private void Update()
+    {
+        UpdateSlider(_currentInputPos);
     }
 
     private void OnDestroy()
     {
         InputEvents.OnPointerDrag -= OnPointerDrag;
+        InputEvents.OnPointerDown -= OnPointerDown;
         InputEvents.OnPointerUp -= OnPointerUp;
         
         GameModeEvents.OnVelocityTargetsGenerated -= OnVelocityTargetGenerated;
-        GameModeEvents.OnShootAttempt -= OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
@@ -47,23 +58,58 @@ public class ShootSliderGUI : MonoBehaviour
     
     private void OnPointerDrag(Vector2 currentPosition, Vector2 startPosition)
     {
-        UpdateSlider(currentPosition, startPosition);
+        if (_waitingForRelease || _shootPerformed)
+            return;
+        
+        if (!_gestureActive)
+        {
+            BeginGesture(startPosition);
+        }
+        
+        _currentInputTime += Time.deltaTime;
+
+        if (_currentInputTime > RuntimeServices.GameModeService.GameModeSettings.ShootInputMaxTime)
+        {
+            ShootAttempt();
+            return;
+        }
+
+        // cache input positions to reset the check even if the input is kept held after the shot
+        _currentInputPos = currentPosition;
+    }
+
+    private void OnPointerDown(Vector2 inputPosition)
+    {
+        BeginGesture(inputPosition);
+    }
+
+    private void BeginGesture(Vector2 startPosition)
+    {
+        _gestureActive = true;
+        _shootPerformed = false;
+        _currentInputTime = 0f;
+
+        _currentInputStartPos = startPosition;
+        _currentInputPos = startPosition;
+
+        _slider.value = 0f;
     }
     
-    private void OnPointerUp(Vector2 currentPosition)
+    private void OnPointerUp()
     {
+        _waitingForRelease = false;
+
+        if (!_gestureActive)
+            return;
+
         ShootAttempt();
+        _gestureActive = false;
     }
 
     private void OnVelocityTargetGenerated(ShootVelocityConfigByType _directScoreData, ShootVelocityConfigByType _blackboardScoreData)
     {
         PlaceLabel(_directScoreData.Min, _directScoreData.Max, _directScoreLabel);
         PlaceLabel(_blackboardScoreData.Min, _blackboardScoreData.Max, _blackboardScoreLabel);
-    }
-
-    private void OnShootAttempt(float shootVelocity)
-    {
-        _shootPerformed = true;
     }
 
     private void OnShootPositionUpdated()
@@ -77,21 +123,17 @@ public class ShootSliderGUI : MonoBehaviour
     /// </summary>
     /// <param name="currentPosition"></param>
     /// <param name="startPosition"></param>
-    private void UpdateSlider(Vector2 currentPosition, Vector2 startPosition)
+    private void UpdateSlider(Vector2 currentPosition)
     {
-        if(_shootPerformed)
+        if (!_gestureActive || _shootPerformed || _waitingForRelease)
             return;
-        
-        float deltaY = Mathf.Max(0f, currentPosition.y - startPosition.y);
-        
+
+        float deltaY = Mathf.Max(0f, _currentInputPos.y - _currentInputStartPos.y);
         float normalized = Mathf.Clamp01(deltaY / Screen.height);
-        
+
         float dragValue = normalized * GameModeEnv.MAX_SHOOT_VELOCITY * _sensitivity;
-        
-        float previousSliderValue = _slider.value;
-        
-        // update only if drag input is increasing
-        if(dragValue < previousSliderValue)
+
+        if (dragValue < _slider.value)
             return;
 
         _slider.value = dragValue;
@@ -105,7 +147,13 @@ public class ShootSliderGUI : MonoBehaviour
         if(_shootPerformed)
             return;
 
-        GameModeEvents.TriggerShootAttempt(_slider.value);
+        _shootPerformed = true;
+        _gestureActive = false;
+        _waitingForRelease = true;
+
+        _currentInputTime = 0f;
+
+        GameModeEvents.TriggerShootAttempt(_slider.value, true);
     }
 
     private void PlaceLabel(int _scoreMin, int _scoreMax, RectTransform _labelRect)

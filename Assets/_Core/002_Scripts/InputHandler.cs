@@ -50,6 +50,8 @@ public class InputHandler : MonoBehaviour
         _inputSystemActions = new InputSystem_Actions();
         _pointerPosition = _inputSystemActions.Pointer.Position;
         _pointerPress = _inputSystemActions.Pointer.Press;
+        
+        RuntimeServices.InputService.PointerPosition = _pointerPosition;
     }
 
     private void ReadPointerDrag()
@@ -65,12 +67,12 @@ public class InputHandler : MonoBehaviour
     {
         _startPosition = _pointerPosition.ReadValue<Vector2>();
         _pressStarted = true;
+        InputEvents.TriggerPointerDown(_startPosition);
     }
 
     private void OnPressEnded(InputAction.CallbackContext ctx)
     {
         _pressStarted = false;
-        Vector2 pos = _pointerPosition.ReadValue<Vector2>();
-        InputEvents.TriggerPointerUp(pos);
+        InputEvents.TriggerPointerUp();
     }
 }

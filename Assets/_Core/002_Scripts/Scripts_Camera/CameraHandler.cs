@@ -41,8 +41,11 @@ public class CameraHandler : MonoBehaviour
         _shootCamera.Priority = 0;
     }
 
-    private void OnShootAttempt(float shootVelocity)
+    private void OnShootAttempt(float shootVelocity, bool isHumanPlayer)
     {
+        if(!isHumanPlayer)
+            return;
+        
         HandleShootCamera();
     }
 

@@ -8,8 +8,11 @@ public static class InputEvents
     public delegate void PointerDragHandler(Vector2 currentPosition, Vector2 startPosition);
     public static event PointerDragHandler OnPointerDrag;
     
-    public delegate void PointerUpHandler(Vector2 currentPosition);
+    public delegate void PointerUpHandler();
     public static event PointerUpHandler OnPointerUp;
+    
+    public delegate void PointerDownHandler(Vector2 inputPosition);
+    public static event PointerDownHandler OnPointerDown;
     
     // ---- Event Triggers ----
 
@@ -18,8 +21,13 @@ public static class InputEvents
         OnPointerDrag?.Invoke(currentPosition, startPosition);
     }
 
-    public static void TriggerPointerUp(Vector2 currentPosition)
+    public static void TriggerPointerDown(Vector2 inputPosition)
     {
-        OnPointerUp?.Invoke(currentPosition);
+        OnPointerDown?.Invoke(inputPosition);
+    }
+
+    public static void TriggerPointerUp()
+    {
+        OnPointerUp?.Invoke();
     }
 }

@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eb778af140e38c48bff01e1a0a18976, type: 3}
   m_Name: GameModeSettings
   m_EditorClassIdentifier: 
-  _nextShootWaitTime: 0.7
+  <StartGameCountdown>k__BackingField: 3
+  <GameModeDuration>k__BackingField: 60
+  <ShootInputMaxTime>k__BackingField: 1
+  <NextShootWaitTime>k__BackingField: 0.7
   shootConfigs:
   - phase: 0
     velocityConfigs:
@@ -38,3 +41,8 @@ MonoBehaviour:
     - ShootType: 1
       Min: 80
       Max: 85
+  basicScoreConfigs:
+  - Score: 3
+    Accuracy: 0
+  - Score: 2
+    Accuracy: 1

@@ -7,7 +7,7 @@ public static class GameModeEvents
     public delegate void OnScoresGeneratedHandler(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits);
     public static event OnScoresGeneratedHandler OnVelocityTargetsGenerated;
     
-    public delegate void OnShootAttemptHandler(float shootVelocity);
+    public delegate void OnShootAttemptHandler(float shootVelocity, bool isHumanPlayer);
     public static event OnShootAttemptHandler OnShootAttempt;
 
     public delegate void OnShootTargetSetHandler(Vector3 shootTarget);
@@ -18,7 +18,7 @@ public static class GameModeEvents
     public static event OnShootCompletedHandler OnShootCompleted;
     
     public delegate void OnScoreHandler(int score);
-    public static event OnScoreHandler OnScore;
+    public static event OnScoreHandler OnShootScore;
 
     public delegate void OnCallNewShootPositionHandler();
 
@@ -26,6 +26,9 @@ public static class GameModeEvents
     
     public delegate void OnShootPositionUpdatedHandler();
     public static event OnShootPositionUpdatedHandler OnShootPositionUpdated;
+    
+    public delegate void OnScoreUpdatedHandler(int score, bool isHumanPlayer);
+    public static event OnScoreUpdatedHandler OnGlobalScoreUpdated;
 
     // --- Event Triggers ---
     
@@ -34,9 +37,9 @@ public static class GameModeEvents
         OnVelocityTargetsGenerated?.Invoke(directScoreLimits, backboardScoreLimits);
     }
 
-    public static void TriggerShootAttempt(float shootVelocity)
+    public static void TriggerShootAttempt(float shootVelocity, bool isHumanPlayer)
     {
-        OnShootAttempt?.Invoke(shootVelocity);
+        OnShootAttempt?.Invoke(shootVelocity, isHumanPlayer);
     }
 
     public static void TriggerShootTargetSet(Vector3 shootTarget)
@@ -49,9 +52,9 @@ public static class GameModeEvents
         OnShootCompleted?.Invoke(result);
     }
 
-    public static void TriggerScore(int score)
+    public static void TriggerShootScore(int score)
     {
-        OnScore?.Invoke(score);
+        OnShootScore?.Invoke(score);
     }
 
     public static void TriggerCallNewPosition()
@@ -62,5 +65,10 @@ public static class GameModeEvents
     public static void TriggerShootPositionUpdated()
     {
         OnShootPositionUpdated?.Invoke();
+    }
+
+    public static void TriggerGlobalScoreUpdated(int score, bool isHumanPlayer)
+    {
+        OnGlobalScoreUpdated?.Invoke(score, isHumanPlayer);
     }
 }

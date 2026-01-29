@@ -17,7 +17,7 @@ public class TargetHandler : MonoBehaviour
     [SerializeField] private float _maxTargetX;
 
     [Header("Ground target config")]
-    [SerializeField] private Transform _adaptableGroundTarget;
+    [SerializeField] private Transform _backboardFailGroundTarget;
     [SerializeField] private float _minGroundX;
     [SerializeField] private float _maxGroundX;
     
@@ -29,17 +29,17 @@ public class TargetHandler : MonoBehaviour
 
     [Header("STATIC TARGETS")]
     [SerializeField] private Transform _scoreTarget;
-    [SerializeField] private Transform _leftSideGroundTarget;
-    [SerializeField] private Transform _rightSideGroundTarget;
+    [SerializeField] private Transform _leftDirectFailGroundTarget;
+    [SerializeField] private Transform _rightDirectFailGroundTarget;
 
     private void Awake()
     {
         RuntimeServices.TargetService.ScoreTarget = _scoreTarget;
         RuntimeServices.TargetService.BackboardTarget = _backboardTarget;
         RuntimeServices.TargetService.FrameTarget = _frameTarget;
-        RuntimeServices.TargetService.AdaptableGroundTarget = _adaptableGroundTarget;
-        RuntimeServices.TargetService.LeftSideGroundTarget = _leftSideGroundTarget;
-        RuntimeServices.TargetService.RightSideGroundTarget = _rightSideGroundTarget;
+        RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
+        RuntimeServices.TargetService.LeftDirectFailGroundTarget = _leftDirectFailGroundTarget;
+        RuntimeServices.TargetService.RightDirectFailGroundTarget = _rightDirectFailGroundTarget;
     }
 
     private void Update()
@@ -65,7 +65,7 @@ public class TargetHandler : MonoBehaviour
 
     private void UpdateGroundTargetPosition()
     {
-        float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _minTargetX, _maxTargetX, _maxGroundX, _minGroundX);
-        _adaptableGroundTarget.localPosition = new Vector3(Mathf.Clamp(groundTargetX, _minGroundX, _maxGroundX), _adaptableGroundTarget.localPosition.y, _adaptableGroundTarget.localPosition.z);
+        float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _minTargetX, _maxTargetX, _minGroundX, _maxGroundX);
+        _backboardFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(groundTargetX, _minGroundX, _maxGroundX), _backboardFailGroundTarget.localPosition.y, _backboardFailGroundTarget.localPosition.z);
     }
 }
