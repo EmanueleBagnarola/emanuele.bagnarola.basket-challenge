@@ -34,14 +34,20 @@ public class BallSpin : MonoBehaviour
         SetParentRotationTarget(shootTarget);
     }
 
+    /// <summary>
+    /// Set the parent relative rotation to face the first shoot target, in order to let the spin rotate on the correct axis
+    /// </summary>
+    /// <param name="target"></param>
     private void SetParentRotationTarget(Vector3 target)
     {
         parentTransform.DOLookAt(target, 0.15f, AxisConstraint.Y);
         StartSpin();
     }
 
-    [Button]
-    public void StartSpin()
+    /// <summary>
+    /// Simulate ball shot spinning
+    /// </summary>
+    private void StartSpin()
     {
         StopSpin();
         
@@ -58,7 +64,7 @@ public class BallSpin : MonoBehaviour
             .SetEase(Ease.Linear);
     }
 
-    public void StopSpin()
+    private void StopSpin()
     {
         spinTween?.Kill();
         spinTween = null;

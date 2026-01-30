@@ -22,8 +22,10 @@ public class RimBounce : MonoBehaviour
         AnimationEvents.OnRimTouched -= Bounce;
     }
 
-    [Button]
-    public void Bounce()
+    /// <summary>
+    /// Simulate the rim bounce when ball touches it
+    /// </summary>
+    private void Bounce()
     {
         transform.DOPunchRotation(_bounceAxis * _bouncePower, _bounceDuration, _bounceVibrato, _bounceElasticity);
     }

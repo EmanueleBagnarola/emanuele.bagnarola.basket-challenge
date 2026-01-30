@@ -17,6 +17,9 @@ public class SetPlayerRotation : MonoBehaviour
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
+    /// <summary>
+    /// Rotate the player to face the hoop when next shot position is set
+    /// </summary>
     private void OnShootPositionUpdated()
     {
         transform.LookAt(_lookAtTransform);

@@ -9,6 +9,9 @@ public static class AnimationEvents
     
     // --- Event Triggers ---
 
+    /// <summary>
+    /// Called when the ball movement curve reach the rim target position
+    /// </summary>
     public static void TriggerRimTouched()
     {
         OnRimTouched?.Invoke();

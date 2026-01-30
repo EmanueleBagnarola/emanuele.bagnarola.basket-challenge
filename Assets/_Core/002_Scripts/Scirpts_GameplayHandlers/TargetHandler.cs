@@ -35,13 +35,7 @@ public class TargetHandler : MonoBehaviour
 
     private void Awake()
     {
-        RuntimeServices.TargetService.ScoreTarget = _scoreTarget;
-        RuntimeServices.TargetService.BackboardTarget = _backboardTarget;
-        RuntimeServices.TargetService.FrameTarget = _frameTarget;
-        RuntimeServices.TargetService.FrameFailTarget = _frameFailTarget;
-        RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
-        RuntimeServices.TargetService.LeftDirectFailGroundTarget = _leftDirectFailGroundTarget;
-        RuntimeServices.TargetService.RightDirectFailGroundTarget = _rightDirectFailGroundTarget;
+        InitializeRuntimeTargetService();
     }
 
     private void Update()
@@ -53,18 +47,42 @@ public class TargetHandler : MonoBehaviour
         UpdateGroundTargetPosition();
     }
 
+    /// <summary>
+    /// Initialize the targets references in the TargetService 
+    /// </summary>
+    private void InitializeRuntimeTargetService()
+    {
+        
+        RuntimeServices.TargetService.ScoreTarget = _scoreTarget;
+        RuntimeServices.TargetService.BackboardTarget = _backboardTarget;
+        RuntimeServices.TargetService.FrameTarget = _frameTarget;
+        RuntimeServices.TargetService.FrameFailTarget = _frameFailTarget;
+        RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
+        RuntimeServices.TargetService.LeftDirectFailGroundTarget = _leftDirectFailGroundTarget;
+        RuntimeServices.TargetService.RightDirectFailGroundTarget = _rightDirectFailGroundTarget;
+    }
+
+    /// <summary>
+    /// Move the backboard target position relative to player position
+    /// </summary>
     private void UpdateBackboardTargetPosition()
     {
         float backboardTargetX = GameUtils.Map(_playerTransform.position.x, _minPlayerX, _maxPlayerX, _minTargetX, _maxTargetX);
         _backboardTarget.localPosition = new Vector3(Mathf.Clamp(backboardTargetX, _minPlayerX, _maxTargetX), _backboardTarget.localPosition.y, _backboardTarget.localPosition.z);
     }
 
+    /// <summary>
+    /// Rotate the pivot of the frame target relative to backboard target (opposite)
+    /// </summary>
     private void UpdateFrameTargetRotation()
     {
         float frameTargetAngle = GameUtils.Map(_backboardTarget.localPosition.x, _minTargetX, _maxTargetX, _minRot, _maxRot);
         _frameTargetPivot.localEulerAngles = new Vector3(0, Mathf.Clamp(frameTargetAngle, _minRot, _maxRot), 0);
     }
 
+    /// <summary>
+    /// Move the ground target position relative to backboard target position (opposite)
+    /// </summary>
     private void UpdateGroundTargetPosition()
     {
         float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _maxTargetX, _minTargetX, _minGroundX, _maxGroundX);

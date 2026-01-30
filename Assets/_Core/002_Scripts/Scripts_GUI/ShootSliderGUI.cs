@@ -15,11 +15,16 @@ public class ShootSliderGUI : MonoBehaviour
     private float _sliderLength;
 
     // Input state
+    // Checks if the input down was pressed
     private bool _gestureActive;
+    // Checks if the input down is still pressed, used to enable the next slider input handling
     private bool _waitingForRelease;
+    // Current held down input for triggering automatic shoot when max time is reached
     private float _currentInputTime;
 
+    // input touch/click start position
     private Vector2 _inputStartPos;
+    // input touch/click current position
     private Vector2 _inputCurrentPos;
 
     #region Unity

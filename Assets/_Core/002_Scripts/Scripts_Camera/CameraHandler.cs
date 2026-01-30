@@ -29,12 +29,18 @@ public class CameraHandler : MonoBehaviour
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
+    /// <summary>
+    /// Change cameras priority to enable blending from base camera to shot camera
+    /// </summary>
     private void HandleShootCamera()
     {
         _baseCamera.Priority = 0;
         _shootCamera.Priority = 1;
     }
 
+    /// <summary>
+    /// Reset cameras priority 
+    /// </summary>
     private void ResetCameras()
     {
         _baseCamera.Priority = 1;
@@ -54,6 +60,10 @@ public class CameraHandler : MonoBehaviour
         ResetCameras();
     }
 
+    /// <summary>
+    /// When the shot is completed, decide if shake can be triggered
+    /// </summary>
+    /// <param name="result"></param>
     private void OnShootCompleted(ShootResult result)
     {
         if(result.Accuracy != ShootAccuracy.Perfect || result.Type == ShootType.Backboard)

@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Game global variables
+/// </summary>
 public static class GameModeEnv 
 {
     public const int MAX_SHOOT_VELOCITY = 100;

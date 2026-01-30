@@ -115,6 +115,9 @@ public class ShootPositionHandler : MonoBehaviour
     }
 }
 
+/// <summary>
+/// For each game mode phase, choose the radius and the angle of the area in which the next shot position could be chosen from
+/// </summary>
 [Serializable]
 public struct ShootRange
 {
