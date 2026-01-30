@@ -24,6 +24,7 @@ public class TargetHandler : MonoBehaviour
     [Header("Frame target config")]
     [SerializeField] private Transform _frameTargetPivot;
     [SerializeField] private Transform _frameTarget;
+    [SerializeField] private Transform _frameFailTarget;
     [SerializeField] private float _minRot;
     [SerializeField] private float _maxRot;
 
@@ -37,6 +38,7 @@ public class TargetHandler : MonoBehaviour
         RuntimeServices.TargetService.ScoreTarget = _scoreTarget;
         RuntimeServices.TargetService.BackboardTarget = _backboardTarget;
         RuntimeServices.TargetService.FrameTarget = _frameTarget;
+        RuntimeServices.TargetService.FrameFailTarget = _frameFailTarget;
         RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
         RuntimeServices.TargetService.LeftDirectFailGroundTarget = _leftDirectFailGroundTarget;
         RuntimeServices.TargetService.RightDirectFailGroundTarget = _rightDirectFailGroundTarget;
@@ -65,7 +67,7 @@ public class TargetHandler : MonoBehaviour
 
     private void UpdateGroundTargetPosition()
     {
-        float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _minTargetX, _maxTargetX, _minGroundX, _maxGroundX);
+        float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _maxTargetX, _minTargetX, _minGroundX, _maxGroundX);
         _backboardFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(groundTargetX, _minGroundX, _maxGroundX), _backboardFailGroundTarget.localPosition.y, _backboardFailGroundTarget.localPosition.z);
     }
 }

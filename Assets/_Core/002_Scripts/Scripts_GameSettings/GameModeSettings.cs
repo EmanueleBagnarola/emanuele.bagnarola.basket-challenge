@@ -11,9 +11,13 @@ public class GameModeSettings : ScriptableObject
     [field: Header("Timers config")]
     [field: SerializeField] public int StartGameCountdown { get; set; } = 3;
 
+    // How much time a gameplay session lasts in seconds
     [field: SerializeField] public int GameModeDuration { get; set; } = 60;
+   
+    // Max time to check to keep the touch input for shooting attempt valid
     [field: SerializeField] public float ShootInputMaxTime { get; set; } = 2;
      
+    // Time to wait from shooting result (score / fail) to next shooting position
     [field: Header("Gameplay config")]
     [field: SerializeField] public float NextShootWaitTime { get; private set; } = 0.7f;
 
@@ -22,6 +26,9 @@ public class GameModeSettings : ScriptableObject
     
     [Header("Score config")]
     [SerializeField, NonReorderable] private List<BasicScoreConfig> basicScoreConfigs = new List<BasicScoreConfig>();
+    
+    [field: Header("Debug")]
+    [field: SerializeField] public bool Debug_UseMaxInputTime { get; private set; } = true;
     
     public ShootVelocityConfigByType GetShootVelocityConfig(ShootType shootType)
     {
@@ -47,6 +54,9 @@ public class GameModeSettings : ScriptableObject
     }
 }
 
+/// <summary>
+/// Based on the current match phase (updated checking the lasting time), get the corresponding velocity config
+/// </summary>
 [System.Serializable]
 public class ShootConfigByPhase
 {
@@ -57,6 +67,9 @@ public class ShootConfigByPhase
     [SerializeField, NonReorderable] private List<ShootVelocityConfigByType> velocityConfigs;
 }
 
+/// <summary>
+/// Based on shoot type (direct or backboard) chooses the limits to show on the slider bar
+/// </summary>
 [System.Serializable]
 public class ShootVelocityConfigByType
 {
@@ -68,6 +81,9 @@ public class ShootVelocityConfigByType
     public int Max;
 }
 
+/// <summary>
+/// Base on final shoot type (accuracy and if direct/backboard) gives the correct basic score (i.e. 3 if perfect, otherwise 2)
+/// </summary>
 [System.Serializable]
 public class BasicScoreConfig
 {

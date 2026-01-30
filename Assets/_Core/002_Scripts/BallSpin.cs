@@ -15,13 +15,13 @@ public class BallSpin : MonoBehaviour
     private void Awake()
     {
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
-        GameModeEvents.OnShootTargetSet += OnShootTargetSet;
+        GameModeEvents.OnFirstShootTargetSet += OnFirstShootTargetSet;
     }
 
     private void OnDestroy()
     {
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
-        GameModeEvents.OnShootTargetSet -= OnShootTargetSet;
+        GameModeEvents.OnFirstShootTargetSet -= OnFirstShootTargetSet;
     }
 
     private void OnShootPositionUpdated()
@@ -29,7 +29,7 @@ public class BallSpin : MonoBehaviour
         StopSpin();
     }
 
-    private void OnShootTargetSet(Vector3 shootTarget)
+    private void OnFirstShootTargetSet(Vector3 shootTarget)
     {
         SetParentRotationTarget(shootTarget);
     }

@@ -28,4 +28,7 @@ public class ShootSettings : ScriptableObject
     [field:Header("Accuracy thresholds")]
     [field:SerializeField] public float DirectAccuracyThreshold { get; private set; } = 5f;
     [field:SerializeField] public float BackboardAccuracyThreshold { get; private set; } = 2f;
+    
+    [field:Header("Randomizer values")]
+    [field:SerializeField] public float RandomOffsetInsideCircleRadius { get; private set; } = 0.15f;
 }

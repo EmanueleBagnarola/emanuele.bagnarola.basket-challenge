@@ -16,6 +16,7 @@ public static class RuntimeServices
         public static Transform ScoreTarget;
         public static Transform BackboardTarget;
         public static Transform FrameTarget;
+        public static Transform FrameFailTarget;
         public static Transform BackboardFailGroundTarget;
         public static Transform LeftDirectFailGroundTarget;
         public static Transform RightDirectFailGroundTarget;

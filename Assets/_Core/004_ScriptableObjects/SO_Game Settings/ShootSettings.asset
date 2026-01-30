@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <ShootForce>k__BackingField: 0.8
   <ShootDuration>k__BackingField: 1
-  <BounceForce>k__BackingField: 0.1
-  <BounceDuration>k__BackingField: 0.15
+  <BounceForce>k__BackingField: 0.15
+  <BounceDuration>k__BackingField: 0.25
   <RimToScoreForce>k__BackingField: 0.05
   <RimToScoreDuration>k__BackingField: 0.1
-  <BounceToGroundForce>k__BackingField: 1.1
-  <BounceToGroundDuration>k__BackingField: 0.9
+  <BounceToGroundForce>k__BackingField: 1.4
+  <BounceToGroundDuration>k__BackingField: 0.8
   <ShootToGroundForce>k__BackingField: 3
   <ShootToGroundDuration>k__BackingField: 1.1
+  <DirectAccuracyThreshold>k__BackingField: 5
+  <BackboardAccuracyThreshold>k__BackingField: 2
+  <RandomOffsetInsideCircleRadius>k__BackingField: 0.15

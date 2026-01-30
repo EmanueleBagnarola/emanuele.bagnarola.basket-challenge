@@ -10,8 +10,11 @@ public static class GameModeEvents
     public delegate void OnShootAttemptHandler(float shootVelocity, bool isHumanPlayer);
     public static event OnShootAttemptHandler OnShootAttempt;
 
-    public delegate void OnShootTargetSetHandler(Vector3 shootTarget);
-    public static event OnShootTargetSetHandler OnShootTargetSet;
+    /// <summary>
+    /// Called when the first shoot target is selected during the shoot curve animation system
+    /// </summary>
+    public delegate void OnFirstShootTargetSetHandler(Vector3 shootTarget);
+    public static event OnFirstShootTargetSetHandler OnFirstShootTargetSet;
 
     public delegate void OnShootCompletedHandler(ShootResult shootResult);
 
@@ -42,9 +45,9 @@ public static class GameModeEvents
         OnShootAttempt?.Invoke(shootVelocity, isHumanPlayer);
     }
 
-    public static void TriggerShootTargetSet(Vector3 shootTarget)
+    public static void TriggerFirstShootTargetSet(Vector3 shootTarget)
     {
-        OnShootTargetSet?.Invoke(shootTarget);
+        OnFirstShootTargetSet?.Invoke(shootTarget);
     }
 
     public static void TriggerShootCompleted(ShootResult result)

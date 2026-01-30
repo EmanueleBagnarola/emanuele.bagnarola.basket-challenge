@@ -89,10 +89,13 @@ public class ShootSliderGUI : MonoBehaviour
 
         _currentInputTime += Time.deltaTime;
 
-        if (_currentInputTime > RuntimeServices.GameModeService.GameModeSettings.ShootInputMaxTime)
+        if (RuntimeServices.GameModeService.GameModeSettings.Debug_UseMaxInputTime)
         {
-            ShootAttempt();
-            return;
+            if (_currentInputTime > RuntimeServices.GameModeService.GameModeSettings.ShootInputMaxTime)
+            {
+                ShootAttempt();
+                return;
+            }
         }
 
         _inputCurrentPos = currentPosition;
