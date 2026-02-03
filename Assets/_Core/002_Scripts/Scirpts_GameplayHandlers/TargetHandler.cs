@@ -16,10 +16,15 @@ public class TargetHandler : MonoBehaviour
     [SerializeField] private float _minTargetX;
     [SerializeField] private float _maxTargetX;
 
-    [Header("Ground target config")]
+    [Header("Backboard fail ground target config")]
     [SerializeField] private Transform _backboardFailGroundTarget;
-    [SerializeField] private float _minGroundX;
-    [SerializeField] private float _maxGroundX;
+    [SerializeField] private float _minBackboardGroundX = -2.7f;
+    [SerializeField] private float _maxBackboardGroundX = 2.7f;
+    
+    [Header("Direct fail ground target config")]
+    [SerializeField] private Transform _directFailGroundTarget;
+    [SerializeField] private float _minDirectGroundX;
+    [SerializeField] private float _maxDirectGroundX;
     
     [Header("Frame target config")]
     [SerializeField] private Transform _frameTargetPivot;
@@ -28,10 +33,8 @@ public class TargetHandler : MonoBehaviour
     [SerializeField] private float _minRot;
     [SerializeField] private float _maxRot;
 
-    [Header("STATIC TARGETS")]
+    [Header("Score target config")]
     [SerializeField] private Transform _scoreTarget;
-    [SerializeField] private Transform _leftDirectFailGroundTarget;
-    [SerializeField] private Transform _rightDirectFailGroundTarget;
 
     private void Awake()
     {
@@ -58,8 +61,7 @@ public class TargetHandler : MonoBehaviour
         RuntimeServices.TargetService.FrameTarget = _frameTarget;
         RuntimeServices.TargetService.FrameFailTarget = _frameFailTarget;
         RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
-        RuntimeServices.TargetService.LeftDirectFailGroundTarget = _leftDirectFailGroundTarget;
-        RuntimeServices.TargetService.RightDirectFailGroundTarget = _rightDirectFailGroundTarget;
+        RuntimeServices.TargetService.DirectFailGroundTarget = _directFailGroundTarget;
     }
 
     /// <summary>
@@ -81,11 +83,14 @@ public class TargetHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Move the ground target position relative to backboard target position (opposite)
+    /// Move the ground targets position (backboard and direct)
     /// </summary>
     private void UpdateGroundTargetPosition()
     {
-        float groundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _maxTargetX, _minTargetX, _minGroundX, _maxGroundX);
-        _backboardFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(groundTargetX, _minGroundX, _maxGroundX), _backboardFailGroundTarget.localPosition.y, _backboardFailGroundTarget.localPosition.z);
+        float backboardGroundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _maxTargetX, _minTargetX, _minBackboardGroundX, _maxBackboardGroundX);
+        _backboardFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(backboardGroundTargetX, _minBackboardGroundX, _maxBackboardGroundX), _backboardFailGroundTarget.localPosition.y, _backboardFailGroundTarget.localPosition.z);
+        
+        float directGroundTargetX = GameUtils.Map(_playerTransform.localPosition.x, _minPlayerX, _maxPlayerX, _minDirectGroundX, _maxDirectGroundX);
+        _directFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(directGroundTargetX, _minDirectGroundX, _maxDirectGroundX), _directFailGroundTarget.localPosition.y, _directFailGroundTarget.localPosition.z);
     }
 }

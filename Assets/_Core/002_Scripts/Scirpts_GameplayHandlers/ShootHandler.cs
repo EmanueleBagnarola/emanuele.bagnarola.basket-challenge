@@ -28,9 +28,6 @@ public class ShootHandler : MonoBehaviour
     [SerializeField] private float _strongShootBackboardTargetYOffset = 0.25f;
     [SerializeField] private float _weakShootBackboardTargetYOffset = 0.13f;
 
-    [Header("Runtime Settings")]
-    [SerializeField] private ShootDirection _position;
-
     // Cache the current shoot result to call the shoot completed event
     private ShootResult _currentShootResult;
     private Vector3 _lastBouncePosition;
@@ -62,7 +59,7 @@ public class ShootHandler : MonoBehaviour
     {
         ShootResult result = GetShootResult(shootVelocity, isHumanPlayer);
         Debug.Log($"ShootResult | Type: {result.Type} | Accuracy: {result.Accuracy} | Strength: {result.Strength}");
-        StartShoot(GetShootPath(result.Type, _position, result.Accuracy, result.Strength));
+        StartShoot(GetShootPath(result.Type, result.Accuracy, result.Strength));
     }
 
     /// <summary>
@@ -252,20 +249,20 @@ public class ShootHandler : MonoBehaviour
     /// <param name="accuracyType"></param>
     /// <param name="shootVelocityType"></param>
     /// <returns></returns>
-    private ShootPath GetShootPath(ShootType shootType, ShootDirection shootDirection, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType)
+    private ShootPath GetShootPath(ShootType shootType, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType)
     {
         ShootPath path = new ShootPath();
 
         Vector3 groundFailAreaTargetPos = Vector3.zero;
 
         // the position from the backboard target adding a small randomized offset inside a circe
-        Vector3 backboardTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
+        Vector3 backboardTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardTarget.position, false);
 
         // the position from the frame target adding a small randomized offset inside a circe
-        Vector3 frameTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
+        Vector3 frameTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameTarget.position);
 
         // the position from the frame fail target adding a small randomized offset inside a circe
-        Vector3 frameFailTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameFailTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
+        Vector3 frameFailTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameFailTarget.position);
 
         switch (shootVelocityType)
         {
@@ -281,22 +278,12 @@ public class ShootHandler : MonoBehaviour
             {
                 // in case of failing during a direct shot, the curve is set to a fixed position on the ground, left or right based on player position relative to the hoop
                 case ShootType.Direct:
-                    switch (shootDirection)
-                    {
-                        case ShootDirection.Right:
-                            groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.RightDirectFailGroundTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
-                            break;
-
-                        case ShootDirection.Left:
-                            groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.LeftDirectFailGroundTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
-                            break;
-                    }
-
+                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.DirectFailGroundTarget.position);
                     break;
 
                 // in case of failing during a backboard shot, the curve is set to end to a ground target that adapts its position based on a sequence of positions that simulate bouncing
                 case ShootType.Backboard:
-                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardFailGroundTarget.position, _shootSettings.RandomOffsetInsideCircleRadius);
+                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardFailGroundTarget.position);
                     break;
             }
         }
@@ -367,9 +354,9 @@ public class ShootHandler : MonoBehaviour
         return path;
     }
 
-    private Vector3 GetRandomOffsetInsideCircle(Vector3 originalPos, float radius, bool yUp = true)
+    private Vector3 GetRandomOffsetInsideCircle(Vector3 originalPos, bool yUp = true)
     {
-        Vector2 randomInsideCircle = UnityEngine.Random.insideUnitCircle * radius;
+        Vector2 randomInsideCircle = UnityEngine.Random.insideUnitCircle * _shootSettings.RandomOffsetInsideCircleRadius;
         Vector3 newPosInRadius = new Vector3(originalPos.x + randomInsideCircle.x, originalPos.y + randomInsideCircle.y, originalPos.z);
         if (yUp)
         {

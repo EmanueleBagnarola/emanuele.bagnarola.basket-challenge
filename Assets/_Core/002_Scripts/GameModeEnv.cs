@@ -23,12 +23,6 @@ public enum ShootVelocityType
     Strong
 }
 
-public enum ShootDirection
-{
-    Left,
-    Right
-}
-
 public enum ShootAccuracy
 {
     Perfect,
