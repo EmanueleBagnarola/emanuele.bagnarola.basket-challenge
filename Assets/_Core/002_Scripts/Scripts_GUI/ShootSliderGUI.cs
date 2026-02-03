@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class ShootSliderGUI : MonoBehaviour
 {
     [Header("UI")]
+    [SerializeField] private GameObject _visualContainer;
     [SerializeField] private Slider _slider;
     [SerializeField] private RectTransform _directScoreLabel;
     [SerializeField] private RectTransform _blackboardScoreLabel;
@@ -37,6 +38,7 @@ public class ShootSliderGUI : MonoBehaviour
         InputEvents.OnPointerDrag += OnPointerDrag;
         InputEvents.OnPointerUp += OnPointerUp;
 
+        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdate;
         GameModeEvents.OnVelocityTargetsGenerated += OnVelocityTargetGenerated;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
     }
@@ -52,6 +54,7 @@ public class ShootSliderGUI : MonoBehaviour
         InputEvents.OnPointerDrag -= OnPointerDrag;
         InputEvents.OnPointerUp -= OnPointerUp;
 
+        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdate;
         GameModeEvents.OnVelocityTargetsGenerated -= OnVelocityTargetGenerated;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
@@ -69,6 +72,10 @@ public class ShootSliderGUI : MonoBehaviour
         _sliderLength = _slider.GetComponent<RectTransform>().sizeDelta.y;
     }
 
+    private void OnGameModePhaseUpdate(GameModePhase gameModePhase)
+    {
+        _visualContainer.SetActive(gameModePhase == GameModePhase.Playing);
+    }
     #endregion
 
     #region Input

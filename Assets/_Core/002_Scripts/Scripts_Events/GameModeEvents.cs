@@ -4,33 +4,59 @@ using UnityEngine;
 
 public static class GameModeEvents
 {
+    public delegate void OnCountdownTickHandler(int currentCountdownTimer);
+    public static event OnCountdownTickHandler OnCountdownTick;
+
+
+    public delegate void OnGameModePhaseUpdatedHandler(GameModePhase gameModePhase);
+    public static event OnGameModePhaseUpdatedHandler OnGameModePhaseUpdated;
+    
+    
     public delegate void OnScoresGeneratedHandler(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits);
     public static event OnScoresGeneratedHandler OnVelocityTargetsGenerated;
+    
 
     public delegate void OnShootAttemptHandler(float shootVelocity, bool isHumanPlayer);
     public static event OnShootAttemptHandler OnShootAttempt;
+    
 
     public delegate void OnFirstShootTargetSetHandler(Vector3 shootTarget);
     public static event OnFirstShootTargetSetHandler OnFirstShootTargetSet;
+    
 
     public delegate void OnShootCompletedHandler(ShootResult shootResult);
-
     public static event OnShootCompletedHandler OnShootCompleted;
+    
     
     public delegate void OnScoreHandler(int score);
     public static event OnScoreHandler OnShootScore;
 
     public delegate void OnCallNewShootPositionHandler();
-
     public static event OnCallNewShootPositionHandler OnCallNewPosition;
+    
     
     public delegate void OnShootPositionUpdatedHandler();
     public static event OnShootPositionUpdatedHandler OnShootPositionUpdated;
+    
     
     public delegate void OnScoreUpdatedHandler(int score, bool isHumanPlayer);
     public static event OnScoreUpdatedHandler OnGlobalScoreUpdated;
 
     // --- Event Triggers ---
+
+    /// <summary>
+    /// Called when start countdown timer is updated
+    /// </summary>
+    /// <param name="currentCountdownTimer"></param>
+    public static void TriggerCountdownTick(int currentCountdownTimer)
+    {
+        OnCountdownTick?.Invoke(currentCountdownTimer);
+    }
+
+    public static void TriggerGameModePhaseUpdated(GameModePhase gameModePhase)
+    {
+        OnGameModePhaseUpdated?.Invoke(gameModePhase);
+    }
     
     /// <summary>
     /// Called when the correct velocity limits visuals are set on the slider

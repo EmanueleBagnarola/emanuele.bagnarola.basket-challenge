@@ -11,14 +11,18 @@ public class GameModeManager : MonoBehaviour
     
     [Header("Score config")]
     [SerializeField] private GameModeSettings _gameModeSettings;
-    [SerializeField] private GameModePhase _currentPhase;
-
+    
     [Header("Gameplay config")]
-    [SerializeField] private Transform _playerTransform;
     [SerializeField] private Transform _shootRangeCenter;
     [SerializeField, NonReorderable] private List<ShootRange> _shootRangesByPhase; //NonReorderable attribute added to fix the editor serialized class visualization but
 
-    private ShootRange currentShootRange;
+    private ShootRange _currentShootRange;
+
+    private int _currentStartCountdownTimer;
+    private Coroutine _countdownRoutine;
+
+    private bool _gameModeTimerStarted;
+    private float _currentGameModeTimer;
     
     private void Awake()
     {
@@ -36,13 +40,20 @@ public class GameModeManager : MonoBehaviour
 
     private void Start()
     {
-        UpdateGamePhase(_currentPhase);
         StartGameMode();
+    }
+
+    private void Update()
+    {
+        UpdateGameModeTimer();
     }
 
     private void StartGameMode()
     {
+        UpdateProgressionPhase(GameModeProgression.Early);
+        UpdateGameModePhase(GameModePhase.Startup);
         UpdateShootPosition();
+        StartCountdown();
     }
 
     private void GenerateShootVelocityTargets()
@@ -52,15 +63,97 @@ public class GameModeManager : MonoBehaviour
         GameModeEvents.TriggerUpdateShootVelocityTargets(directVelocityConfig, backboardVelocityConfig);
     }
 
-    private void UpdateGamePhase(GameModePhase gameModePhase)
+    /// <summary>
+    /// Initialize the start game countdown
+    /// </summary>
+    private void StartCountdown()
     {
-        _currentPhase = gameModePhase;
-        RuntimeServices.GameModeService.CurrentPhase = _currentPhase;
+        StopCountdown();
+
+        _currentStartCountdownTimer = _gameModeSettings.StartGameCountdown;
+        GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer); // Call the first countdown tick 
+        _countdownRoutine = StartCoroutine(CountdownRoutine());
+    }
+
+    private IEnumerator CountdownRoutine()
+    {
+        while (_currentStartCountdownTimer > 0)
+        {
+            Debug.Log($"Countdown: {_currentStartCountdownTimer}");
+            GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer);
+            
+            yield return new WaitForSeconds(1f);
+
+            _currentStartCountdownTimer--;
+        }
+        
+        GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer);
+        UpdateGameModePhase(GameModePhase.Playing);
+        Debug.Log("START");
+    }
+
+    private void StopCountdown()
+    {
+        if (_countdownRoutine != null)
+        {
+            StopCoroutine(_countdownRoutine);
+            _countdownRoutine = null;
+        }
+    }
+    
+
+    /// <summary>
+    /// Updates the timer and calls the end game phase when conditions are met (shot still in progress or performed)
+    /// </summary>
+    private void UpdateGameModeTimer()
+    {
+        if(!_gameModeTimerStarted)
+            return;
+        
+        _currentGameModeTimer -= Time.deltaTime;
+
+        RuntimeServices.GameModeService.Timer = _currentGameModeTimer;
+
+        if (_currentGameModeTimer <= 0)
+        {
+            switch (RuntimeServices.GameModeService.ShootPhase)
+            {
+                case ShootPhase.Completed:
+                    UpdateGameModePhase(GameModePhase.End);
+                    break;
+                
+                case ShootPhase.Started:
+                    UpdateGameModePhase(GameModePhase.WaitForEnd);
+                    break;
+            }
+        }
+    }
+
+    private void UpdateGameModePhase(GameModePhase gameModePhase)
+    {
+        if (gameModePhase == GameModePhase.Playing)
+        {
+            _currentGameModeTimer = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration;
+            _gameModeTimerStarted = true;
+        }
+        
+        GameModeEvents.TriggerGameModePhaseUpdated(gameModePhase);
+    }
+    
+    private void UpdateProgressionPhase(GameModeProgression gameModeProgression)
+    {
+        RuntimeServices.GameModeService.GameModeProgression = gameModeProgression;
         GenerateShootVelocityTargets();
     }
 
     private void OnShootCompleted(ShootResult result)
     {
+        if(RuntimeServices.GameModeService.GameModePhase == GameModePhase.WaitForEnd)
+        {
+            UpdateGameModePhase(GameModePhase.End);
+            return;
+        }        
+        
         // Calculate score taking in consideration type, accuracy and if "special backboard phase" is active:
         // 3 points for "Perfect", 2 points for "Accurate"
         // if type is "Backboard" and special backboard phase is active:
@@ -87,15 +180,7 @@ public class GameModeManager : MonoBehaviour
     private void UpdateShootPosition()
     {
         GameModeEvents.TriggerCallNewPosition();
-        
     }
-
-    [Button]
-    public void Debug_GenerateScore()
-    {
-        UpdateGamePhase(_currentPhase);
-    }
-
 }
 
 

@@ -9,24 +9,32 @@ public class CameraHandler : MonoBehaviour
     [Header("Config")]
     [SerializeField] private CinemachineVirtualCamera _baseCamera;
     [SerializeField] private CinemachineVirtualCamera _shootCamera;
+    [SerializeField] private CinemachineVirtualCamera _endCamera;
     
     [Header("Shake settings")]
     [SerializeField] private CinemachineShake _shakeController;
     [SerializeField] private float _shakeIntensity;
     [SerializeField] private float _shakeDuration;
 
-    private void OnEnable()
+    private void Start()
+    {
+        ResetCameras();
+    }
+
+    private void Awake()
     {
         GameModeEvents.OnShootAttempt += OnShootAttempt;
         GameModeEvents.OnShootCompleted += OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
+        GameModeEvents.OnGameModePhaseUpdated += OnGamePhaseUpdated;
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         GameModeEvents.OnShootAttempt -= OnShootAttempt;
         GameModeEvents.OnShootCompleted -= OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
+        GameModeEvents.OnGameModePhaseUpdated -= OnGamePhaseUpdated;
     }
 
     /// <summary>
@@ -38,6 +46,13 @@ public class CameraHandler : MonoBehaviour
         _shootCamera.Priority = 1;
     }
 
+    private void HandleEndCamera()
+    {
+        _baseCamera.Priority = 0;
+        _shootCamera.Priority = 0;
+        _endCamera.Priority = 1;
+    }
+
     /// <summary>
     /// Reset cameras priority 
     /// </summary>
@@ -45,6 +60,7 @@ public class CameraHandler : MonoBehaviour
     {
         _baseCamera.Priority = 1;
         _shootCamera.Priority = 0;
+        _endCamera.Priority = 0;
     }
 
     private void OnShootAttempt(float shootVelocity, bool isHumanPlayer)
@@ -58,6 +74,16 @@ public class CameraHandler : MonoBehaviour
     private void OnShootPositionUpdated()
     {
         ResetCameras();
+    }
+
+    private void OnGamePhaseUpdated(GameModePhase gameModePhase)
+    {
+        switch (gameModePhase)
+        {
+            case GameModePhase.End:
+                HandleEndCamera();
+                break;
+        }
     }
 
     /// <summary>

@@ -14,27 +14,36 @@ public class InputHandler : MonoBehaviour
     private InputAction _pointerPosition;
     private InputAction _pointerPress;
     private Vector2 _startPosition;
-
+    
     private void Awake()
     {
         InitializeInputSystemActions();
+        
+        _pointerPress.started += OnPressStarted;
+        _pointerPress.canceled += OnPressEnded;
+
+        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdated;
     }
-    
-    private void OnEnable()
+
+    private void OnDestroy()
+    {
+        DisableActions();
+        
+        _pointerPress.started -= OnPressStarted;
+        _pointerPress.canceled -= OnPressEnded;
+        
+        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdated;
+    }
+
+    private void EnableActions()
     {
         _inputSystemActions.Enable();
         _pointerPosition.Enable();
         _pointerPress.Enable();
-
-        _pointerPress.started += OnPressStarted;
-        _pointerPress.canceled += OnPressEnded;
     }
 
-    private void OnDisable()
+    private void DisableActions()
     {
-        _pointerPress.started -= OnPressStarted;
-        _pointerPress.canceled -= OnPressEnded;
-
         _inputSystemActions.Disable();
         _pointerPosition.Disable();
         _pointerPress.Disable();
@@ -50,8 +59,6 @@ public class InputHandler : MonoBehaviour
         _inputSystemActions = new InputSystem_Actions();
         _pointerPosition = _inputSystemActions.Pointer.Position;
         _pointerPress = _inputSystemActions.Pointer.Press;
-        
-        RuntimeServices.InputService.PointerPosition = _pointerPosition;
     }
 
     private void ReadPointerDrag()
@@ -74,5 +81,23 @@ public class InputHandler : MonoBehaviour
     {
         _pressStarted = false;
         InputEvents.TriggerPointerUp();
+    }
+
+    private void OnGameModePhaseUpdated(GameModePhase gameModePhase)
+    {
+        switch (gameModePhase)
+        {
+            case GameModePhase.Startup:
+                DisableActions();
+                break;
+            
+            case GameModePhase.Playing:
+                EnableActions();
+                break;
+            
+            case GameModePhase.End:
+                DisableActions();
+                break;
+        }
     }
 }

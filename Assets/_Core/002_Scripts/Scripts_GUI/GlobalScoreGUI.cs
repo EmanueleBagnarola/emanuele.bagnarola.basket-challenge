@@ -26,7 +26,7 @@ public class GlobalScoreGUI : MonoBehaviour
         }
         else
         {
-            
+            //aiLabelGUI.UpdateScore(score);
         }
     }
     

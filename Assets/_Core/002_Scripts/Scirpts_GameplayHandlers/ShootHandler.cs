@@ -150,6 +150,9 @@ public class ShootHandler : MonoBehaviour
         if (path.Steps == null || path.Steps.Count == 0)
             return;
 
+        // Update the runtime shoot phase value
+        RuntimeServices.GameModeService.ShootPhase = ShootPhase.Started;
+
         // Call the event passing the target of the first step of the curve path
         GameModeEvents.TriggerFirstShootTargetSet(path.Steps[0].Target);
 
@@ -229,6 +232,9 @@ public class ShootHandler : MonoBehaviour
     {
         EnablePhysics(_lastBouncePosition);
 
+        // Update the runtime shoot phase value
+        RuntimeServices.GameModeService.ShootPhase = ShootPhase.Completed;
+        
         GameModeEvents.TriggerShootCompleted(_currentShootResult);
     }
 

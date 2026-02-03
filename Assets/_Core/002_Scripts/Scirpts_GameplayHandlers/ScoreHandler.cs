@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class ScoreHandler : MonoBehaviour
 {
-    private int currentScore;
+    private int currentPlayerScore;
+    private int currentAIScore;
     
     private void Awake()
     {
@@ -26,13 +27,22 @@ public class ScoreHandler : MonoBehaviour
         int basicScore = RuntimeServices.GameModeService.GameModeSettings.GetBasicScoreByAccuracy(result.Accuracy, result.Type);
         Debug.Log($"SCORE: {basicScore}");
 
-        int totalScore = basicScore;
+        int shootScore = basicScore;
         
-        currentScore += totalScore;
+        currentPlayerScore += shootScore;
         
-        if(totalScore > 0)
-            GameModeEvents.TriggerShootScore(totalScore);
+        if(shootScore > 0)
+            GameModeEvents.TriggerShootScore(shootScore);
         
-        GameModeEvents.TriggerGlobalScoreUpdated(currentScore, result.IsHumanPlayer);
+        GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? currentPlayerScore : currentAIScore, result.IsHumanPlayer);
+
+        if (result.IsHumanPlayer)
+        {
+            RuntimeServices.GameModeService.PlayerScore = currentPlayerScore;
+        }
+        else
+        {
+            RuntimeServices.GameModeService.AIScore = currentAIScore;
+        }
     }
 }

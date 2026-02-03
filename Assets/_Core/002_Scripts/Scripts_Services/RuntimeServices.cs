@@ -8,7 +8,12 @@ public static class RuntimeServices
     public static class GameModeService
     {
         public static GameModeSettings GameModeSettings;
-        public static GameModePhase CurrentPhase;
+        public static GameModePhase GameModePhase;
+        public static GameModeProgression GameModeProgression;
+        public static ShootPhase ShootPhase;
+        public static float Timer;
+        public static int PlayerScore;
+        public static int AIScore;
     }
 
     public static class TargetService
@@ -20,10 +25,5 @@ public static class RuntimeServices
         public static Transform BackboardFailGroundTarget;
         public static Transform LeftDirectFailGroundTarget;
         public static Transform RightDirectFailGroundTarget;
-    }
-
-    public static class InputService
-    {
-        public static InputAction PointerPosition;
     }
 }

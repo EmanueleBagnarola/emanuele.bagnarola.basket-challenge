@@ -18,7 +18,7 @@ MonoBehaviour:
   <BounceDuration>k__BackingField: 0.25
   <RimToScoreForce>k__BackingField: 0.05
   <RimToScoreDuration>k__BackingField: 0.1
-  <BounceToGroundForce>k__BackingField: 1.4
+  <BounceToGroundForce>k__BackingField: 1.25
   <BounceToGroundDuration>k__BackingField: 0.8
   <ShootToGroundForce>k__BackingField: 3
   <ShootToGroundDuration>k__BackingField: 1.1
