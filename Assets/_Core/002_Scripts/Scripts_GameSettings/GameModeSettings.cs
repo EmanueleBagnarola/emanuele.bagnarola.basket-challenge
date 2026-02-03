@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using Random = Unity.Mathematics.Random;
 
 [CreateAssetMenu(fileName = "GameModeSettings", menuName = "ScriptableObjects/GameModeSettings")]
 public class GameModeSettings : ScriptableObject
@@ -21,11 +22,17 @@ public class GameModeSettings : ScriptableObject
     [field: Header("Gameplay config")]
     [field: SerializeField] public float NextShootWaitTime { get; private set; } = 0.7f;
 
+    // Probability that the backboard bonus can appear after each shot
+    [field: Header("Bonus Score config")]
+    [field: SerializeField] public int BackboardBonusProbability { get; private set; }
+    [SerializeField, NonReorderable] private List<BackboardBonusScoreConfig> BackboardBonusScoreConfigs = new List<BackboardBonusScoreConfig>();
+    
     [Header("Shoot velocity config")]
     [SerializeField, NonReorderable] private List<ShootConfigByPhase> shootConfigs = new List<ShootConfigByPhase>();
     
-    [Header("Score config")]
+    [Header("Basic Score config")]
     [SerializeField, NonReorderable] private List<BasicScoreConfig> basicScoreConfigs = new List<BasicScoreConfig>();
+    
     
     [field: Header("Debug")]
     [field: SerializeField] public bool Debug_UseMaxInputTime { get; private set; } = true;
@@ -51,6 +58,30 @@ public class GameModeSettings : ScriptableObject
         }
         
         return score;
+    }
+
+    public int GetRandomBackboardBonusScore()
+    {
+        int totalWeight = 0;
+
+        foreach (var backboardBonusScore in BackboardBonusScoreConfigs)
+        {
+            totalWeight += backboardBonusScore.RandomWeight;
+        }
+        
+        int r = UnityEngine.Random.Range(0, totalWeight);
+        int v = 0;
+
+        foreach (var backboardBonusScore in BackboardBonusScoreConfigs)
+        {
+            v += backboardBonusScore.RandomWeight;
+            if (r < v)
+            {
+                return backboardBonusScore.Score;
+            }
+        }
+
+        return BackboardBonusScoreConfigs[BackboardBonusScoreConfigs.Count - 1].Score;
     }
 }
 
@@ -91,4 +122,12 @@ public class BasicScoreConfig
     public ShootAccuracy Accuracy;
     public ShootType Type;
 }
+
+[System.Serializable]
+public class BackboardBonusScoreConfig
+{
+    public int Score;
+    public int RandomWeight;
+}
+
 

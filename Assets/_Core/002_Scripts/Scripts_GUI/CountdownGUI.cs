@@ -15,16 +15,13 @@ public class CountdownGUI : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private float _scaleDuration = 0.15f;
+    
     private void Awake()
     {
+        HideCountdownMessage();
         GameModeEvents.OnCountdownTick += OnCountdownTick;
     }
-
-    private void Start()
-    {
-        HideCountdownMessage();
-    }
-
+    
     private void OnDestroy()
     {
         GameModeEvents.OnCountdownTick -= OnCountdownTick;
@@ -32,10 +29,11 @@ public class CountdownGUI : MonoBehaviour
 
     private void OnCountdownTick(int currentCountdownTimer)
     {
+        transform.localScale = Vector3.zero;
+        transform.DOScale(Vector3.one, _scaleDuration);
+        
         if (currentCountdownTimer > 0)
         {
-            _countdownText.transform.localScale = Vector3.zero;
-            _countdownText.transform.DOScale(Vector3.one, _scaleDuration);
             SetCountdownText(currentCountdownTimer.ToString());
         }
         else
@@ -52,6 +50,7 @@ public class CountdownGUI : MonoBehaviour
 
     private void HideCountdownMessage()
     {
+        transform.localScale = Vector3.zero;
         _countdownText.text = "";
     }
 }

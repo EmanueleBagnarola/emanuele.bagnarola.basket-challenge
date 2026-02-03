@@ -20,8 +20,8 @@ MonoBehaviour:
   <RimToScoreDuration>k__BackingField: 0.1
   <BounceToGroundForce>k__BackingField: 1.25
   <BounceToGroundDuration>k__BackingField: 0.8
-  <ShootToGroundForce>k__BackingField: 3
-  <ShootToGroundDuration>k__BackingField: 1.1
+  <ShootToGroundForce>k__BackingField: 2.6
+  <ShootToGroundDuration>k__BackingField: 1
   <DirectAccuracyThreshold>k__BackingField: 5
   <BackboardAccuracyThreshold>k__BackingField: 2
   <RandomOffsetInsideCircleRadius>k__BackingField: 0.15

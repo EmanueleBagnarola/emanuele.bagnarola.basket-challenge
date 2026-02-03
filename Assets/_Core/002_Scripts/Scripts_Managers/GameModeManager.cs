@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Random = System.Random;
 
 public class GameModeManager : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class GameModeManager : MonoBehaviour
     private float _currentGameModeTimer;
 
     private GameModePhase _currentGameModePhase;
+
+    private bool _backboardBonusIsOn;
     
     private void Awake()
     {
@@ -33,11 +36,13 @@ public class GameModeManager : MonoBehaviour
         RuntimeServices.GameModeService.GameModeSettings = _gameModeSettings;
 
         GameModeEvents.OnShootCompleted += OnShootCompleted;
+        GameModeEvents.OnShootScore += OnShootScore;
     }
 
     private void OnDestroy()
     {
         GameModeEvents.OnShootCompleted -= OnShootCompleted;
+        GameModeEvents.OnShootScore -= OnShootScore;
     }
 
     private void Start()
@@ -66,7 +71,6 @@ public class GameModeManager : MonoBehaviour
         StopCountdown();
 
         _currentStartCountdownTimer = _gameModeSettings.StartGameCountdown;
-        GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer); // Call the first countdown tick 
         _countdownRoutine = StartCoroutine(CountdownRoutine());
     }
 
@@ -96,7 +100,6 @@ public class GameModeManager : MonoBehaviour
         }
     }
     
-
     /// <summary>
     /// Updates the timer and calls the end game phase when conditions are met (shot still in progress or performed)
     /// </summary>
@@ -175,12 +178,27 @@ public class GameModeManager : MonoBehaviour
         {
             UpdateGameModeState(GameModeState.End);
             return;
-        }        
+        }
         
-        // Update game phase based on current timer
-
         // after a fixed wait time, update next shoot position
         StartCoroutine(CallNextShootPosition());
+    }
+
+    private void OnShootScore(ShootResult result, int score)
+    {
+        // check if a backboard bonus score can be generated
+        if (!_backboardBonusIsOn)
+        {
+            // handle generation
+            CheckBackboardBonus();
+            return;
+        }
+        
+        // if shot was perfect and on backboard, hide the current bonus
+        if (result.Accuracy == ShootAccuracy.Perfect && result.Type == ShootType.Backboard)
+        {
+            DisableBackboardBonus();
+        }
     }
 
     private IEnumerator CallNextShootPosition()
@@ -194,6 +212,36 @@ public class GameModeManager : MonoBehaviour
     private void UpdateShootPosition()
     {
         GameModeEvents.TriggerCallNewPosition();
+    }
+
+    private void CheckBackboardBonus()
+    {
+        int percentageValue = UnityEngine.Random.Range(1, 101);
+        
+        Debug.Log($"HandleBackboardBonus: {percentageValue}%");
+        
+        if (percentageValue <= _gameModeSettings.BackboardBonusProbability)
+        {
+            int backboardBonusScore = _gameModeSettings.GetRandomBackboardBonusScore();
+            
+            Debug.Log($"Show Backboard Bonus: {backboardBonusScore}");
+            
+            EnableBackboardBonus(backboardBonusScore);
+        }
+    }
+
+    private void EnableBackboardBonus(int bonusScore)
+    {
+        _backboardBonusIsOn = true;
+        RuntimeServices.GameModeService.BackboardBonus = bonusScore;
+        GameModeEvents.TriggerBackboardBonus(true, bonusScore);
+    }
+
+    private void DisableBackboardBonus()
+    {
+        _backboardBonusIsOn = false;
+        RuntimeServices.GameModeService.BackboardBonus = 0;
+        GameModeEvents.TriggerBackboardBonus(false, -1);
     }
 }
 

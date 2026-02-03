@@ -33,7 +33,7 @@ public class ShootScoreGUI : MonoBehaviour
         GameModeEvents.OnShootScore -= OnShootScore;
     }
 
-    private void OnShootScore(int score)
+    private void OnShootScore(ShootResult result, int score)
     {
         StartCoroutine(ShowScoreText(string.Format(_scoreTextFormat, score)));
     }

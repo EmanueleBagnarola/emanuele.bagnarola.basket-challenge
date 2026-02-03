@@ -27,7 +27,7 @@ public static class GameModeEvents
     public static event OnShootCompletedHandler OnShootCompleted;
     
     
-    public delegate void OnScoreHandler(int score);
+    public delegate void OnScoreHandler(ShootResult result, int score);
     public static event OnScoreHandler OnShootScore;
 
     public delegate void OnCallNewShootPositionHandler();
@@ -36,6 +36,10 @@ public static class GameModeEvents
     
     public delegate void OnShootPositionUpdatedHandler();
     public static event OnShootPositionUpdatedHandler OnShootPositionUpdated;
+
+
+    public delegate void OnBackboardBonusHandler(bool show, int bonusScore);
+    public static event OnBackboardBonusHandler OnBackboardBonus;
     
     
     public delegate void OnScoreUpdatedHandler(int score, bool isHumanPlayer);
@@ -93,9 +97,9 @@ public static class GameModeEvents
     /// Called when the current shot score is decided
     /// </summary>
     /// <param name="score"></param>
-    public static void TriggerShootScore(int score)
+    public static void TriggerShootScore(ShootResult result, int score)
     {
-        OnShootScore?.Invoke(score);
+        OnShootScore?.Invoke(result, score);
     }
 
     /// <summary>
@@ -114,6 +118,16 @@ public static class GameModeEvents
         OnShootPositionUpdated?.Invoke();
     }
 
+    /// <summary>
+    /// Called when the backboard bonus is generated
+    /// </summary>
+    /// <param name="show"></param>
+    /// <param name="bonusScore"></param>
+    public static void TriggerBackboardBonus(bool show, int bonusScore)
+    {
+        OnBackboardBonus?.Invoke(show, bonusScore);
+    }
+    
     /// <summary>
     /// Called to update the total score of the player
     /// </summary>

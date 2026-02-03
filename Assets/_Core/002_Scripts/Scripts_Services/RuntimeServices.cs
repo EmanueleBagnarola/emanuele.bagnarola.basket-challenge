@@ -11,6 +11,7 @@ public static class RuntimeServices
         public static GameModeState GameModeState;
         public static GameModePhase GameModePhase;
         public static ShootPhase ShootPhase;
+        public static int BackboardBonus;
         public static float Timer;
         public static int PlayerScore;
         public static int AIScore;

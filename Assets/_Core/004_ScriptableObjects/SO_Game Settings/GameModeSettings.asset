@@ -16,6 +16,14 @@ MonoBehaviour:
   <GameModeDuration>k__BackingField: 30
   <ShootInputMaxTime>k__BackingField: 1
   <NextShootWaitTime>k__BackingField: 0.7
+  <BackboardBonusProbability>k__BackingField: 30
+  BackboardBonusScoreConfigs:
+  - Score: 4
+    RandomWeight: 30
+  - Score: 6
+    RandomWeight: 50
+  - Score: 8
+    RandomWeight: 20
   shootConfigs:
   - phase: 0
     velocityConfigs:
