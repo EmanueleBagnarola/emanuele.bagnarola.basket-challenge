@@ -59,7 +59,7 @@ public class GameModeManager : MonoBehaviour
     {
         UpdateGameModePhase(GameModePhase.Early);
         UpdateGameModeState(GameModeState.Startup);
-        UpdateShootPosition();
+        UpdateShootPosition(true);
         StartCountdown();
     }
 
@@ -180,8 +180,8 @@ public class GameModeManager : MonoBehaviour
             return;
         }
         
-        // after a fixed wait time, update next shoot position
-        StartCoroutine(CallNextShootPosition());
+        // after a fixed wait time, update next shoot position if the shot was successful (perfect or accurate)
+        StartCoroutine(CallNextShootPosition(result.Accuracy == ShootAccuracy.Perfect || result.Accuracy == ShootAccuracy.Accurate));
     }
 
     private void OnShootScore(ShootResult result, int score)
@@ -201,17 +201,17 @@ public class GameModeManager : MonoBehaviour
         }
     }
 
-    private IEnumerator CallNextShootPosition()
+    private IEnumerator CallNextShootPosition(bool changePosition)
     {
         yield return new WaitForSeconds(_gameModeSettings.NextShootWaitTime);
         
         // Update new shoot position
-        UpdateShootPosition();
+        UpdateShootPosition(changePosition);
     }
 
-    private void UpdateShootPosition()
+    private void UpdateShootPosition(bool changePosition)
     {
-        GameModeEvents.TriggerCallNewPosition();
+        GameModeEvents.TriggerResetShootPosition(changePosition);
     }
 
     private void CheckBackboardBonus()

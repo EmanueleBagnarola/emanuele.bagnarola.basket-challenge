@@ -17,17 +17,6 @@ public class ShootHandler : MonoBehaviour
     [Header("Shoot Settings")]
     [SerializeField] private ShootSettings _shootSettings;
 
-    [Header("Bounce physics settings")]
-    [SerializeField] private float _bounceForceMultiplier = 1;
-
-    [Header("Ease settings")]
-    [SerializeField] private Ease _shootEase = Ease.Linear;
-    [SerializeField] private Ease _bounceEase = Ease.Linear;
-
-    [Header("Target Settings")]
-    [SerializeField] private float _strongShootBackboardTargetYOffset = 0.25f;
-    [SerializeField] private float _weakShootBackboardTargetYOffset = 0.13f;
-
     // Cache the current shoot result to call the shoot completed event
     private ShootResult _currentShootResult;
     private Vector3 _lastBouncePosition;
@@ -155,6 +144,12 @@ public class ShootHandler : MonoBehaviour
 
         // Execute the first curve step
         ExecuteStep(path, 0);
+
+        // Get the current total time to consider the shot completed, based on path time given by the current shot result
+        float shotValidateTime = _shootSettings.GetShotValidateTime(_currentShootResult);
+        Debug.Log($"shotValidateTime: {shotValidateTime}");
+        
+        Invoke(nameof(CallShotCompleted), shotValidateTime);
     }
 
     /// <summary>
@@ -172,7 +167,7 @@ public class ShootHandler : MonoBehaviour
         // if every curve path step is handled, call the shot completed 
         if (index >= path.Steps.Count)
         {
-            ShotCompleted();
+            //CallShotCompleted();
             return;
         }
 
@@ -220,12 +215,12 @@ public class ShootHandler : MonoBehaviour
             _lastBounceFound = true;
         }
 
-        Ease ease = _firstStep ? _shootEase : _bounceEase;
+        Ease ease = _firstStep ? _shootSettings.ShootEase : _shootSettings.BounceEase;
 
         _ballBody.transform.DOJump(step.Target, step.Power, 1, step.Duration).SetEase(ease).OnComplete(() => onComplete?.Invoke());
     }
 
-    private void ShotCompleted()
+    private void CallShotCompleted()
     {
         EnablePhysics(_lastBouncePosition);
 
@@ -235,10 +230,19 @@ public class ShootHandler : MonoBehaviour
         GameModeEvents.TriggerShootCompleted(_currentShootResult);
     }
 
-    private void EnablePhysics(Vector3 lastBounceDirection)
+    private void EnablePhysics(Vector3 lastBouncePosition)
     {
         _ballBody.isKinematic = false;
-        _ballBody.AddForce((_ballBody.transform.position - lastBounceDirection).normalized + Vector3.down * _bounceForceMultiplier, ForceMode.Impulse);
+
+        // direction from last bounce position
+        Vector3 bounceDirection = (_ballBody.position - lastBouncePosition).normalized;
+
+        Vector3 force = bounceDirection + Vector3.down * _shootSettings.FinalSimulatedBounceMultiplier;
+
+        _ballBody.velocity = Vector3.zero;
+        // _ballBody.angularVelocity = Vector3.zero;
+
+        _ballBody.AddForce(force, ForceMode.Impulse);
     }
 
     /// <summary>
@@ -268,7 +272,7 @@ public class ShootHandler : MonoBehaviour
         {
             // if shot was strong, add a y offset to backboard target to set the ball position higher
             case ShootVelocityType.Strong:
-                backboardTargetPos += new Vector3(0, _strongShootBackboardTargetYOffset, 0);
+                backboardTargetPos += new Vector3(0, _shootSettings.StrongShootBackboardTargetYOffset, 0);
                 break;
         }
 
@@ -276,12 +280,12 @@ public class ShootHandler : MonoBehaviour
         {
             switch (shootType)
             {
-                // in case of failing during a direct shot, the curve is set to a fixed position on the ground, left or right based on player position relative to the hoop
+                // in case of failing the curve is set to end to a ground target that adapts its position based on player position
                 case ShootType.Direct:
                     groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.DirectFailGroundTarget.position);
                     break;
 
-                // in case of failing during a backboard shot, the curve is set to end to a ground target that adapts its position based on a sequence of positions that simulate bouncing
+                // in case of failing the curve is set to end to a ground target that adapts its position based on a sequence of positions that simulate bouncing
                 case ShootType.Backboard:
                     groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardFailGroundTarget.position);
                     break;
@@ -296,19 +300,19 @@ public class ShootHandler : MonoBehaviour
                 {
                     // directly to shoot scoring
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTarget.position, lastValidStep:true);
                         path.Steps.Add(shootToScore);
                         break;
 
                     // shoot -> loop rim -> score
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration,  RuntimeServices.TargetService.ScoreTarget.position, lastValidStep:true);
                         path.Steps.Add(rimToScore);
                         break;
 
-                    // shoot to fixed ground position
+                    // shoot to ground position
                     case ShootAccuracy.Fail:
                         ShootPathStep shootToGround = new ShootPathStep(_shootSettings.ShootToGroundForce, _shootSettings.ShootToGroundDuration, groundFailAreaTargetPos);
                         path.Steps.Add(shootToGround);
@@ -333,7 +337,7 @@ public class ShootHandler : MonoBehaviour
 
                     // backboard -> rim -> score target
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameTargetPos, true, AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
                         ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
                         path.Steps.Add(rimToScore);
@@ -407,12 +411,16 @@ public class ShootPathStep
     // Check if this was the last step the let the next shoot timer know when to start and to handle extra ball physics
     public bool LastBounce;
 
-    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, Action onStepStarted = null)
+    // Check if this was the last step from which start time countdown to reset next position
+    public bool LastValidStep;
+
+    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, bool lastValidStep = false, Action onStepStarted = null)
     {
         Power = power;
         Duration = duration;
         Target = target;
         LastBounce = lastBounce;
+        LastValidStep = lastValidStep;
         OnStepStarted = onStepStarted;
     }
 }

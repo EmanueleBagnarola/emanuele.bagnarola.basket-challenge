@@ -25,3 +25,9 @@ MonoBehaviour:
   <DirectAccuracyThreshold>k__BackingField: 5
   <BackboardAccuracyThreshold>k__BackingField: 2
   <RandomOffsetInsideCircleRadius>k__BackingField: 0.15
+  <FinalSimulatedBounceMultiplier>k__BackingField: 1
+  <ShootEase>k__BackingField: 1
+  <BounceEase>k__BackingField: 1
+  <StrongShootBackboardTargetYOffset>k__BackingField: 0.25
+  <DirectFailedCheckTime>k__BackingField: 0.6
+  <BackboardFailedCheckTime>k__BackingField: 0.3

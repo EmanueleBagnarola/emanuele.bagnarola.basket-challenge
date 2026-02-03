@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ShootSettings", menuName = "ScriptableObjects/ShootSettings")]
@@ -38,4 +39,58 @@ public class ShootSettings : ScriptableObject
     [field:Header("Randomizer values")]
     // Radius to add to the random offset inside a circe to randomize the curve path step position
     [field:SerializeField] public float RandomOffsetInsideCircleRadius { get; private set; } = 0.15f;
+    
+    [field:Header("Bounce physics settings")]
+    [field:SerializeField] public float FinalSimulatedBounceMultiplier { get; private set; } = 1;
+    
+    [field:Header("Ease settings")]
+    [field:SerializeField] public Ease ShootEase { get; private set; } = Ease.Linear;
+    [field:SerializeField] public Ease BounceEase { get; private set; } = Ease.Linear;
+
+    [field:Header("Shot strength relative Settings")]
+    [field:SerializeField] public float StrongShootBackboardTargetYOffset { get; private set; } = 0.25f;
+    
+    [field:Header("Failed shot check time")]
+    [field:SerializeField] public float DirectFailedCheckTime { get; private set; } = 0.6f;
+    [field:SerializeField] public float BackboardFailedCheckTime { get; private set; } = 0.3f;
+
+    /// <summary>
+    /// Get the current shot time to use as value to call the next shot position update
+    /// </summary>
+    /// <returns></returns>
+    public float GetShotValidateTime(ShootResult shootResult)
+    {
+        switch (shootResult.Type)
+        {
+            case ShootType.Direct:
+                switch (shootResult.Accuracy)
+                {
+                    case ShootAccuracy.Perfect:
+                        return ShootDuration;
+                    
+                    case ShootAccuracy.Accurate:
+                        return ShootDuration + RimToScoreDuration;
+                    
+                    case ShootAccuracy.Fail:
+                        return DirectFailedCheckTime;
+                }
+                break;
+            
+            case ShootType.Backboard:
+                switch (shootResult.Accuracy)
+                {
+                    case ShootAccuracy.Perfect:
+                        return ShootDuration + BounceDuration;
+                    
+                    case ShootAccuracy.Accurate:
+                        return ShootDuration + BounceDuration + RimToScoreDuration;
+                    
+                    case ShootAccuracy.Fail:
+                        return ShootDuration + BounceDuration + BackboardFailedCheckTime;
+                }
+                break;
+        }
+
+        return ShootDuration;
+    }
 }

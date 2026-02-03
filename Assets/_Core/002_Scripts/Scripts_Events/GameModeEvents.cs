@@ -30,8 +30,8 @@ public static class GameModeEvents
     public delegate void OnScoreHandler(ShootResult result, int score);
     public static event OnScoreHandler OnShootScore;
 
-    public delegate void OnCallNewShootPositionHandler();
-    public static event OnCallNewShootPositionHandler OnCallNewPosition;
+    public delegate void OnResetShootPositionHandler(bool changePosition);
+    public static event OnResetShootPositionHandler OnResetShootPosition;
     
     
     public delegate void OnShootPositionUpdatedHandler();
@@ -105,9 +105,9 @@ public static class GameModeEvents
     /// <summary>
     /// Called when the system is ready to call the next shot position
     /// </summary>
-    public static void TriggerCallNewPosition()
+    public static void TriggerResetShootPosition(bool changePosition)
     {
-        OnCallNewPosition?.Invoke();
+        OnResetShootPosition?.Invoke(changePosition);
     }
 
     /// <summary>

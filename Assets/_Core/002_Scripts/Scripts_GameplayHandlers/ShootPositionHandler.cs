@@ -9,23 +9,27 @@ public class ShootPositionHandler : MonoBehaviour
     [SerializeField] private Transform _shootRangeCenter;
     [SerializeField, NonReorderable] private List<ShootRange> _shootRangesByPhase; //NonReorderable attribute added to fix the editor serialized class visualization but
     
-    private ShootRange currentShootRange;
+    private ShootRange _currentShootRange;
+    private Vector3 _currentShootPosition;
 
     private void Awake()
     {
-        GameModeEvents.OnCallNewPosition += UpdateCurrentShootPosition;
+        GameModeEvents.OnResetShootPosition += OnResetShootPosition;
     }
 
     private void OnDestroy()
     {
-        GameModeEvents.OnCallNewPosition -= UpdateCurrentShootPosition;
+        GameModeEvents.OnResetShootPosition -= OnResetShootPosition;
     }
 
-    private void UpdateCurrentShootPosition()
+    private void OnResetShootPosition(bool changePosition)
     {
-        currentShootRange = GeShootPositionsPoolByPhase();
-        Vector3 shootPosition = GetRandomPointOnShootRange(currentShootRange);
-        _playerTransform.position = shootPosition;
+        _currentShootRange = GeShootPositionsPoolByPhase();
+        
+        if(changePosition)
+            _currentShootPosition = GetRandomPointOnShootRange(_currentShootRange);
+        
+        _playerTransform.position = _currentShootPosition;
 
         GameModeEvents.TriggerShootPositionUpdated();
     }
