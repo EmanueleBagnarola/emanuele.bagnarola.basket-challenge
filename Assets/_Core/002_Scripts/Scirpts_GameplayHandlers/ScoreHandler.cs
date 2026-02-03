@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class ScoreHandler : MonoBehaviour
 {
-    private int currentPlayerScore;
-    private int currentAIScore;
-    
     private void Awake()
     {
         GameModeEvents.OnShootCompleted += OnShootCompleted;
@@ -25,24 +22,27 @@ public class ScoreHandler : MonoBehaviour
     private void OnShootCompleted(ShootResult result)
     {
         int basicScore = RuntimeServices.GameModeService.GameModeSettings.GetBasicScoreByAccuracy(result.Accuracy, result.Type);
-        Debug.Log($"SCORE: {basicScore}");
+        Debug.Log($"OnShootCompleted | shot score: {basicScore}");
 
-        int shootScore = basicScore;
+        int finalShootScore = basicScore;
         
-        currentPlayerScore += shootScore;
-        
-        if(shootScore > 0)
-            GameModeEvents.TriggerShootScore(shootScore);
-        
-        GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? currentPlayerScore : currentAIScore, result.IsHumanPlayer);
+        // Calculate score taking in consideration type, accuracy and if "special backboard phase" is active:
+        // 3 points for "Perfect", 2 points for "Accurate"
+        // if type is "Backboard" and special backboard phase is active:
+        // based on game phase: early (4 points), mid (6 points), late (8 points)
+        switch (result.Accuracy)
+        {
+            
+        }
 
         if (result.IsHumanPlayer)
-        {
-            RuntimeServices.GameModeService.PlayerScore = currentPlayerScore;
-        }
+            RuntimeServices.GameModeService.PlayerScore += finalShootScore;
         else
-        {
-            RuntimeServices.GameModeService.AIScore = currentAIScore;
-        }
+            RuntimeServices.GameModeService.AIScore += finalShootScore;
+        
+        if(finalShootScore > 0)
+            GameModeEvents.TriggerShootScore(finalShootScore);
+        
+        GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? RuntimeServices.GameModeService.PlayerScore : RuntimeServices.GameModeService.AIScore, result.IsHumanPlayer);
     }
 }

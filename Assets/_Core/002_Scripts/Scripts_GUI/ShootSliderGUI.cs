@@ -38,8 +38,7 @@ public class ShootSliderGUI : MonoBehaviour
         InputEvents.OnPointerDrag += OnPointerDrag;
         InputEvents.OnPointerUp += OnPointerUp;
 
-        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdate;
-        GameModeEvents.OnVelocityTargetsGenerated += OnVelocityTargetGenerated;
+        GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdate;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
     }
 
@@ -54,8 +53,7 @@ public class ShootSliderGUI : MonoBehaviour
         InputEvents.OnPointerDrag -= OnPointerDrag;
         InputEvents.OnPointerUp -= OnPointerUp;
 
-        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdate;
-        GameModeEvents.OnVelocityTargetsGenerated -= OnVelocityTargetGenerated;
+        GameModeEvents.OnGameModeStateUpdated -= OnGameModeStateUpdate;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
@@ -72,9 +70,9 @@ public class ShootSliderGUI : MonoBehaviour
         _sliderLength = _slider.GetComponent<RectTransform>().sizeDelta.y;
     }
 
-    private void OnGameModePhaseUpdate(GameModePhase gameModePhase)
+    private void OnGameModeStateUpdate(GameModeState gameModeState)
     {
-        _visualContainer.SetActive(gameModePhase == GameModePhase.Playing);
+        _visualContainer.SetActive(gameModeState == GameModeState.Playing);
     }
     #endregion
 
@@ -138,7 +136,6 @@ public class ShootSliderGUI : MonoBehaviour
         // Detect input only going up
         _slider.value = Mathf.Max(_slider.value, value);
     }
-
     #endregion
 
     #region Shoot
@@ -156,16 +153,20 @@ public class ShootSliderGUI : MonoBehaviour
     {
         _waitingForRelease = false;
         _slider.value = 0f;
+
+        UpdateSliderVelocityLabels();
     }
 
     #endregion
 
     #region Labels
-
-    private void OnVelocityTargetGenerated(ShootVelocityConfigByType directScore, ShootVelocityConfigByType blackboardScore)
+    private void UpdateSliderVelocityLabels()
     {
-        PlaceLabel(directScore.Min, directScore.Max, _directScoreLabel);
-        PlaceLabel(blackboardScore.Min, blackboardScore.Max, _blackboardScoreLabel);
+        ShootVelocityConfigByType directVelocityConfig = RuntimeServices.GameModeService.GameModeSettings.GetShootVelocityConfig(ShootType.Direct);
+        ShootVelocityConfigByType backboardVelocityConfig = RuntimeServices.GameModeService.GameModeSettings.GetShootVelocityConfig(ShootType.Backboard);
+        
+        PlaceLabel(directVelocityConfig.Min, directVelocityConfig.Max, _directScoreLabel);
+        PlaceLabel(backboardVelocityConfig.Min, backboardVelocityConfig.Max, _blackboardScoreLabel);
     }
 
     private void PlaceLabel(int scoreMin, int scoreMax, RectTransform label)

@@ -44,7 +44,7 @@ public class ShootPositionHandler : MonoBehaviour
 
     private ShootRange GeShootPositionsPoolByPhase()
     {
-        return _shootRangesByPhase.Find(p => p.Phase == RuntimeServices.GameModeService.GameModeProgression);
+        return _shootRangesByPhase.Find(p => p.Phase == RuntimeServices.GameModeService.GameModePhase);
     }
     
         
@@ -59,15 +59,15 @@ public class ShootPositionHandler : MonoBehaviour
             Color gizmoColor = Color.white;
             switch (range.Phase)
             {
-                case GameModeProgression.Early:
+                case GameModePhase.Early:
                     gizmoColor = Color.yellow;
                     break;
                 
-                case GameModeProgression.Mid:
+                case GameModePhase.Mid:
                     gizmoColor = Color.green;
                     break;
                 
-                case GameModeProgression.Late:
+                case GameModePhase.Late:
                     gizmoColor = Color.blue;
                     break;
             }
@@ -121,7 +121,7 @@ public class ShootPositionHandler : MonoBehaviour
 [Serializable]
 public struct ShootRange
 {
-    public GameModeProgression Phase;
+    public GameModePhase Phase;
     public float RangeRadius;
     
     [Range(-180f, 180f)]

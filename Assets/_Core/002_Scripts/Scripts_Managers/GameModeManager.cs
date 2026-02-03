@@ -23,6 +23,8 @@ public class GameModeManager : MonoBehaviour
 
     private bool _gameModeTimerStarted;
     private float _currentGameModeTimer;
+
+    private GameModePhase _currentGameModePhase;
     
     private void Awake()
     {
@@ -50,17 +52,10 @@ public class GameModeManager : MonoBehaviour
 
     private void StartGameMode()
     {
-        UpdateProgressionPhase(GameModeProgression.Early);
-        UpdateGameModePhase(GameModePhase.Startup);
+        UpdateGameModePhase(GameModePhase.Early);
+        UpdateGameModeState(GameModeState.Startup);
         UpdateShootPosition();
         StartCountdown();
-    }
-
-    private void GenerateShootVelocityTargets()
-    {
-        ShootVelocityConfigByType directVelocityConfig = _gameModeSettings.GetShootVelocityConfig(ShootType.Direct);
-        ShootVelocityConfigByType backboardVelocityConfig = _gameModeSettings.GetShootVelocityConfig(ShootType.Backboard);
-        GameModeEvents.TriggerUpdateShootVelocityTargets(directVelocityConfig, backboardVelocityConfig);
     }
 
     /// <summary>
@@ -88,7 +83,7 @@ public class GameModeManager : MonoBehaviour
         }
         
         GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer);
-        UpdateGameModePhase(GameModePhase.Playing);
+        UpdateGameModeState(GameModeState.Playing);
         Debug.Log("START");
     }
 
@@ -119,49 +114,68 @@ public class GameModeManager : MonoBehaviour
             switch (RuntimeServices.GameModeService.ShootPhase)
             {
                 case ShootPhase.Completed:
-                    UpdateGameModePhase(GameModePhase.End);
+                    UpdateGameModeState(GameModeState.End);
                     break;
                 
                 case ShootPhase.Started:
-                    UpdateGameModePhase(GameModePhase.WaitForEnd);
+                    UpdateGameModeState(GameModeState.WaitForEnd);
                     break;
             }
         }
+
+        // Call phase update if changed
+        GameModePhase previousPhase = _currentGameModePhase;
+        
+        _currentGameModePhase = GetUpdatedGameModePhase();
+        
+        if(_currentGameModePhase != previousPhase)
+            UpdateGameModePhase(_currentGameModePhase);
+    }
+    
+    /// <summary>
+    /// Get the game mode phase based on current timer
+    /// </summary>
+    /// <returns></returns>
+    private GameModePhase GetUpdatedGameModePhase()
+    {
+        float lateThreshold = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration / 3.0f;
+        float midThreshold = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration - lateThreshold;
+        
+        if (_currentGameModeTimer < lateThreshold) 
+            return GameModePhase.Late;
+        
+        if (_currentGameModeTimer < midThreshold) 
+            return GameModePhase.Mid;
+        
+        return GameModePhase.Early;
     }
 
-    private void UpdateGameModePhase(GameModePhase gameModePhase)
+    private void UpdateGameModeState(GameModeState gameModeState)
     {
-        if (gameModePhase == GameModePhase.Playing)
+        if (gameModeState == GameModeState.Playing)
         {
             _currentGameModeTimer = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration;
             _gameModeTimerStarted = true;
         }
         
-        GameModeEvents.TriggerGameModePhaseUpdated(gameModePhase);
+        GameModeEvents.TriggerGameModeStateUpdated(gameModeState);
     }
     
-    private void UpdateProgressionPhase(GameModeProgression gameModeProgression)
+    private void UpdateGameModePhase(GameModePhase gameModePhase)
     {
-        RuntimeServices.GameModeService.GameModeProgression = gameModeProgression;
-        GenerateShootVelocityTargets();
+        RuntimeServices.GameModeService.GameModePhase = gameModePhase;
+        Debug.Log($"UpdateGameModePhase: {RuntimeServices.GameModeService.GameModePhase}");
+
+        GameModeEvents.TriggerGamePhaseUpdated(gameModePhase);
     }
 
     private void OnShootCompleted(ShootResult result)
     {
-        if(RuntimeServices.GameModeService.GameModePhase == GameModePhase.WaitForEnd)
+        if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
         {
-            UpdateGameModePhase(GameModePhase.End);
+            UpdateGameModeState(GameModeState.End);
             return;
         }        
-        
-        // Calculate score taking in consideration type, accuracy and if "special backboard phase" is active:
-        // 3 points for "Perfect", 2 points for "Accurate"
-        // if type is "Backboard" and special backboard phase is active:
-        // based on game phase: early (4 points), mid (6 points), late (8 points)
-        switch (result.Accuracy)
-        {
-            
-        }
         
         // Update game phase based on current timer
 

@@ -26,7 +26,7 @@ public class CameraHandler : MonoBehaviour
         GameModeEvents.OnShootAttempt += OnShootAttempt;
         GameModeEvents.OnShootCompleted += OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
-        GameModeEvents.OnGameModePhaseUpdated += OnGamePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated += OnGameStateUpdated;
     }
 
     private void OnDestroy()
@@ -34,7 +34,7 @@ public class CameraHandler : MonoBehaviour
         GameModeEvents.OnShootAttempt -= OnShootAttempt;
         GameModeEvents.OnShootCompleted -= OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
-        GameModeEvents.OnGameModePhaseUpdated -= OnGamePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated -= OnGameStateUpdated;
     }
 
     /// <summary>
@@ -76,11 +76,11 @@ public class CameraHandler : MonoBehaviour
         ResetCameras();
     }
 
-    private void OnGamePhaseUpdated(GameModePhase gameModePhase)
+    private void OnGameStateUpdated(GameModeState gameModeState)
     {
-        switch (gameModePhase)
+        switch (gameModeState)
         {
-            case GameModePhase.End:
+            case GameModeState.End:
                 HandleEndCamera();
                 break;
         }

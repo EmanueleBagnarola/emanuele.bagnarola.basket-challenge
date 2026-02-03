@@ -19,19 +19,19 @@ public class FinalScoreGUI : MonoBehaviour
     [SerializeField] private float _animationDuration = 0.5f;
     private void Awake()
     {
-        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdated;
 
         Show(false);
     }
 
     private void OnDestroy()
     {
-        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated -= OnGameModeStateUpdated;
     }
 
-    private void OnGameModePhaseUpdated(GameModePhase gameModePhase)
+    private void OnGameModeStateUpdated(GameModeState gameModeState)
     {
-        if(gameModePhase != GameModePhase.End)
+        if(gameModeState != GameModeState.End)
             return;
         
         _playerScoreText.text = RuntimeServices.GameModeService.PlayerScore.ToString();

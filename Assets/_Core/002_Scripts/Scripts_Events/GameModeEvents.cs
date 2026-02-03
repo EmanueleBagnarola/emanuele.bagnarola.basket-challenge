@@ -6,16 +6,15 @@ public static class GameModeEvents
 {
     public delegate void OnCountdownTickHandler(int currentCountdownTimer);
     public static event OnCountdownTickHandler OnCountdownTick;
-
-
+    
+    public delegate void OnGameModeStateUpdatedHandler(GameModeState gameModeState);
+    public static event OnGameModeStateUpdatedHandler OnGameModeStateUpdated;
+    
+    
     public delegate void OnGameModePhaseUpdatedHandler(GameModePhase gameModePhase);
     public static event OnGameModePhaseUpdatedHandler OnGameModePhaseUpdated;
     
     
-    public delegate void OnScoresGeneratedHandler(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits);
-    public static event OnScoresGeneratedHandler OnVelocityTargetsGenerated;
-    
-
     public delegate void OnShootAttemptHandler(float shootVelocity, bool isHumanPlayer);
     public static event OnShootAttemptHandler OnShootAttempt;
     
@@ -53,17 +52,14 @@ public static class GameModeEvents
         OnCountdownTick?.Invoke(currentCountdownTimer);
     }
 
-    public static void TriggerGameModePhaseUpdated(GameModePhase gameModePhase)
+    public static void TriggerGameModeStateUpdated(GameModeState gameModeState)
+    {
+        OnGameModeStateUpdated?.Invoke(gameModeState);
+    }
+
+    public static void TriggerGamePhaseUpdated(GameModePhase gameModePhase)
     {
         OnGameModePhaseUpdated?.Invoke(gameModePhase);
-    }
-    
-    /// <summary>
-    /// Called when the correct velocity limits visuals are set on the slider
-    /// </summary>
-    public static void TriggerUpdateShootVelocityTargets(ShootVelocityConfigByType directScoreLimits, ShootVelocityConfigByType backboardScoreLimits)
-    {
-        OnVelocityTargetsGenerated?.Invoke(directScoreLimits, backboardScoreLimits);
     }
 
     /// <summary>

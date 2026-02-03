@@ -30,7 +30,7 @@ public enum ShootAccuracy
     Fail,
 }
 
-public enum GameModeProgression
+public enum GameModePhase
 {
     Early,
     Mid,
@@ -43,7 +43,7 @@ public enum ShootPhase
     Completed,
 }
 
-public enum GameModePhase
+public enum GameModeState
 {
     Startup,
     Playing,

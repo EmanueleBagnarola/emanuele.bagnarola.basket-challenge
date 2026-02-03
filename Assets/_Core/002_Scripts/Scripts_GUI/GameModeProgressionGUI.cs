@@ -23,12 +23,12 @@ public class GameModeProgressionGUI : MonoBehaviour
 
     private void Awake()
     {
-        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdated;
     }
 
     private void OnDestroy()
     {
-        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated -= OnGameModeStateUpdated;
     }
 
     private void Update()
@@ -59,22 +59,22 @@ public class GameModeProgressionGUI : MonoBehaviour
         _fillImage.color = _timerVisualizationColors[index];
     }
 
-    private void OnGameModePhaseUpdated(GameModePhase gameModePhase)
+    private void OnGameModeStateUpdated(GameModeState gameModeState)
     {
-        switch (gameModePhase)
+        switch (gameModeState)
         {
-            case GameModePhase.Startup:
+            case GameModeState.Startup:
                 InitSlider();
                 ShowFill(false);
                 _finalScoreGUI.Show(false);
                 break;
             
-            case GameModePhase.Playing:
+            case GameModeState.Playing:
                 ShowFill(true);
                 _updateSliderVisual = true;
                 break;
             
-            case GameModePhase.End:
+            case GameModeState.End:
                 _finalScoreGUI.Show(true);
                 break;
         }

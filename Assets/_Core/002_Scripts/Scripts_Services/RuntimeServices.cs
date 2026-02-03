@@ -8,8 +8,8 @@ public static class RuntimeServices
     public static class GameModeService
     {
         public static GameModeSettings GameModeSettings;
+        public static GameModeState GameModeState;
         public static GameModePhase GameModePhase;
-        public static GameModeProgression GameModeProgression;
         public static ShootPhase ShootPhase;
         public static float Timer;
         public static int PlayerScore;

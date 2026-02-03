@@ -32,7 +32,7 @@ public class GameModeSettings : ScriptableObject
     
     public ShootVelocityConfigByType GetShootVelocityConfig(ShootType shootType)
     {
-        ShootConfigByPhase shootConfigByPhase = shootConfigs.Find(t => t.Phase == RuntimeServices.GameModeService.GameModeProgression);
+        ShootConfigByPhase shootConfigByPhase = shootConfigs.Find(t => t.Phase == RuntimeServices.GameModeService.GameModePhase);
 
         return shootConfigByPhase.VelocityConfigs.Find(s => s.ShootType == shootType);
     }
@@ -61,9 +61,9 @@ public class GameModeSettings : ScriptableObject
 public class ShootConfigByPhase
 {
     public List<ShootVelocityConfigByType> VelocityConfigs => velocityConfigs;
-    public GameModeProgression Phase => phase;
+    public GameModePhase Phase => phase;
     
-    [SerializeField] private GameModeProgression phase;
+    [SerializeField] private GameModePhase phase;
     [SerializeField, NonReorderable] private List<ShootVelocityConfigByType> velocityConfigs;
 }
 

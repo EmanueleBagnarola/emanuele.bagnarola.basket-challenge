@@ -22,7 +22,7 @@ public class InputHandler : MonoBehaviour
         _pointerPress.started += OnPressStarted;
         _pointerPress.canceled += OnPressEnded;
 
-        GameModeEvents.OnGameModePhaseUpdated += OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdated;
     }
 
     private void OnDestroy()
@@ -32,7 +32,7 @@ public class InputHandler : MonoBehaviour
         _pointerPress.started -= OnPressStarted;
         _pointerPress.canceled -= OnPressEnded;
         
-        GameModeEvents.OnGameModePhaseUpdated -= OnGameModePhaseUpdated;
+        GameModeEvents.OnGameModeStateUpdated -= OnGameModeStateUpdated;
     }
 
     private void EnableActions()
@@ -83,19 +83,19 @@ public class InputHandler : MonoBehaviour
         InputEvents.TriggerPointerUp();
     }
 
-    private void OnGameModePhaseUpdated(GameModePhase gameModePhase)
+    private void OnGameModeStateUpdated(GameModeState gameModeState)
     {
-        switch (gameModePhase)
+        switch (gameModeState)
         {
-            case GameModePhase.Startup:
+            case GameModeState.Startup:
                 DisableActions();
                 break;
             
-            case GameModePhase.Playing:
+            case GameModeState.Playing:
                 EnableActions();
                 break;
             
-            case GameModePhase.End:
+            case GameModeState.End:
                 DisableActions();
                 break;
         }
