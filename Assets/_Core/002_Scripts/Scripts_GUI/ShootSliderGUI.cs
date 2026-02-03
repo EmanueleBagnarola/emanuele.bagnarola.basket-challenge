@@ -72,7 +72,16 @@ public class ShootSliderGUI : MonoBehaviour
 
     private void OnGameModeStateUpdate(GameModeState gameModeState)
     {
-        _visualContainer.SetActive(gameModeState == GameModeState.Playing);
+        switch (gameModeState)
+        {
+            case GameModeState.End:
+                _visualContainer.SetActive(false);
+                break;
+            
+            default:
+                _visualContainer.SetActive(true);
+                break;
+        }
     }
     #endregion
 
@@ -82,6 +91,9 @@ public class ShootSliderGUI : MonoBehaviour
     {
         if (_waitingForRelease)
             return;
+        
+        // Update the runtime shoot phase value
+        RuntimeServices.GameModeService.ShootPhase = ShootPhase.Started;
 
         _gestureActive = true;
         _currentInputTime = 0f;

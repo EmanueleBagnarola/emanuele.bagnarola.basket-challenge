@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class GlobalScoreGUI : MonoBehaviour
 {
-    [SerializeField] private PlayerLabelGUI humanLabelGUI;
-    [SerializeField] private PlayerLabelGUI aiLabelGUI;
+    [SerializeField] private PlayerLabelGUI _humanLabelGUI;
+    [SerializeField] private PlayerLabelGUI _aiLabelGUI;
     
     private void Awake()
     {
@@ -22,12 +22,11 @@ public class GlobalScoreGUI : MonoBehaviour
     {
         if (isHumanPlayer)
         {
-            humanLabelGUI.UpdateScore(score);
+            _humanLabelGUI.UpdateScore(score);
         }
         else
         {
             //aiLabelGUI.UpdateScore(score);
         }
     }
-    
 }

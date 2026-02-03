@@ -26,7 +26,7 @@ public class ScoreHandler : MonoBehaviour
         int finalShootScore = basicScore;
         
         // if shot result was perfect and on backboard, use the backboard bonus (if was generated)
-        if (result.Accuracy == ShootAccuracy.Perfect && result.Type == ShootType.Backboard)
+        if (result.Accuracy == ShootAccuracy.Perfect && result.Type == ShootType.Backboard && RuntimeServices.GameModeService.BackboardBonus > 0)
             finalShootScore = RuntimeServices.GameModeService.BackboardBonus;
 
         Debug.Log($"OnShootCompleted | shot score: {finalShootScore}");

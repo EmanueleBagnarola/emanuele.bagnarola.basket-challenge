@@ -15,6 +15,13 @@ public static class RuntimeServices
         public static float Timer;
         public static int PlayerScore;
         public static int AIScore;
+
+        public static void Reset()
+        {
+            BackboardBonus = 0;
+            PlayerScore = 0;
+            AIScore = 0;
+        }
     }
 
     public static class TargetService

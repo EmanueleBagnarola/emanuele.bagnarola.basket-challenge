@@ -65,6 +65,8 @@ public class ShootHandler : MonoBehaviour
         // velocity configs (limits on slider) from direct and backboard shot types
         ShootVelocityConfigByType directVelocityConfig = RuntimeServices.GameModeService.GameModeSettings.GetShootVelocityConfig(ShootType.Direct);
         ShootVelocityConfigByType backboardVelocityConfig = RuntimeServices.GameModeService.GameModeSettings.GetShootVelocityConfig(ShootType.Backboard);
+        
+        // Debug.Log($"GetShootResult | v {shootVelocity} | direct min {directVelocityConfig.Min} max {directVelocityConfig.Max} | backboard min {backboardVelocityConfig.Min} max {backboardVelocityConfig.Max}");
 
         // --- PERFECT SHOT (if shoot velocity is exactly inside the config limits
         if (shootVelocity >= directVelocityConfig.Min && shootVelocity <= directVelocityConfig.Max)
@@ -135,9 +137,6 @@ public class ShootHandler : MonoBehaviour
     {
         if (path.Steps == null || path.Steps.Count == 0)
             return;
-
-        // Update the runtime shoot phase value
-        RuntimeServices.GameModeService.ShootPhase = ShootPhase.Started;
 
         // Call the event passing the target of the first step of the curve path
         GameModeEvents.TriggerFirstShootTargetSet(path.Steps[0].Target);

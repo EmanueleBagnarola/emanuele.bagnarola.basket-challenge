@@ -83,6 +83,9 @@ public class CameraHandler : MonoBehaviour
 
     private void OnShootPositionUpdated()
     {
+        if(RuntimeServices.GameModeService.GameModeState != GameModeState.Playing)
+            return;
+        
         ResetCameras();
     }
 

@@ -31,16 +31,24 @@ public class FinalScoreGUI : MonoBehaviour
 
     private void OnGameModeStateUpdated(GameModeState gameModeState)
     {
-        if(gameModeState != GameModeState.End)
-            return;
-        
-        _playerScoreText.text = RuntimeServices.GameModeService.PlayerScore.ToString();
-        _aiScoreText.text = RuntimeServices.GameModeService.AIScore.ToString();
+        switch (gameModeState)
+        {
+            case GameModeState.Playing:
+                Show(false);
+                break;
+            
+            case GameModeState.End:
+                _playerScoreText.text = RuntimeServices.GameModeService.PlayerScore.ToString();
+                _aiScoreText.text = RuntimeServices.GameModeService.AIScore.ToString();
+                Show(true);
+                break;
+        }
     }
 
-    public void Show(bool show)
+    private void Show(bool show)
     {
         _visualPanel.gameObject.SetActive(show);
+        
         if (show)
         {
             _visualPanel.transform.localScale = Vector3.zero;

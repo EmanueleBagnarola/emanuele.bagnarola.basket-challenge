@@ -45,6 +45,10 @@ public static class GameModeEvents
     public delegate void OnScoreUpdatedHandler(int score, bool isHumanPlayer);
     public static event OnScoreUpdatedHandler OnGlobalScoreUpdated;
 
+
+    public delegate void OnShowRewardsHandler();
+    public static event OnShowRewardsHandler OnShowRewards;
+
     // --- Event Triggers ---
 
     /// <summary>
@@ -136,5 +140,13 @@ public static class GameModeEvents
     public static void TriggerGlobalScoreUpdated(int score, bool isHumanPlayer)
     {
         OnGlobalScoreUpdated?.Invoke(score, isHumanPlayer);
+    }
+
+    /// <summary>
+    /// Called after game is over
+    /// </summary>
+    public static void TriggerShowRewards()
+    {
+        OnShowRewards?.Invoke();
     }
 }

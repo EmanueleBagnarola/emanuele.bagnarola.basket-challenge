@@ -33,16 +33,19 @@ public class GameModeManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         
+        RuntimeServices.GameModeService.Reset();
         RuntimeServices.GameModeService.GameModeSettings = _gameModeSettings;
 
         GameModeEvents.OnShootCompleted += OnShootCompleted;
         GameModeEvents.OnShootScore += OnShootScore;
+        GameModeEvents.OnGlobalScoreUpdated += OnGlobalScoreUpdated;
     }
 
     private void OnDestroy()
     {
         GameModeEvents.OnShootCompleted -= OnShootCompleted;
         GameModeEvents.OnShootScore -= OnShootScore;
+        GameModeEvents.OnGlobalScoreUpdated -= OnGlobalScoreUpdated;
     }
 
     private void Start()
@@ -117,22 +120,16 @@ public class GameModeManager : MonoBehaviour
             switch (RuntimeServices.GameModeService.ShootPhase)
             {
                 case ShootPhase.Completed:
-                    UpdateGameModeState(GameModeState.End);
+                    if(RuntimeServices.GameModeService.GameModeState != GameModeState.End)
+                        UpdateGameModeState(GameModeState.End);
                     break;
                 
                 case ShootPhase.Started:
-                    UpdateGameModeState(GameModeState.WaitForEnd);
+                    if(RuntimeServices.GameModeService.GameModeState != GameModeState.WaitForEnd)
+                        UpdateGameModeState(GameModeState.WaitForEnd);
                     break;
             }
         }
-
-        // Call phase update if changed
-        GameModePhase previousPhase = _currentGameModePhase;
-        
-        _currentGameModePhase = GetUpdatedGameModePhase();
-        
-        if(_currentGameModePhase != previousPhase)
-            UpdateGameModePhase(_currentGameModePhase);
     }
     
     /// <summary>
@@ -155,13 +152,33 @@ public class GameModeManager : MonoBehaviour
 
     private void UpdateGameModeState(GameModeState gameModeState)
     {
-        if (gameModeState == GameModeState.Playing)
+        switch (gameModeState)
         {
-            _currentGameModeTimer = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration;
-            _gameModeTimerStarted = true;
+            case GameModeState.Playing:
+                _currentGameModeTimer = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration;
+                _gameModeTimerStarted = true;
+                break;
+            
+            case GameModeState.End:
+                StartCoroutine(CallRewardsPage());
+                break;
         }
         
+        RuntimeServices.GameModeService.GameModeState = gameModeState;
+        
         GameModeEvents.TriggerGameModeStateUpdated(gameModeState);
+    }
+    
+    private void CheckGamePhaseUpdate()
+    {
+        GameModePhase previousPhase = RuntimeServices.GameModeService.GameModePhase;
+        GameModePhase newPhase = GetUpdatedGameModePhase();
+        
+        if(previousPhase == newPhase)
+            return;
+        
+        // Check if game mode phase can change based on current timer
+        UpdateGameModePhase(newPhase);
     }
     
     private void UpdateGameModePhase(GameModePhase gameModePhase)
@@ -174,11 +191,7 @@ public class GameModeManager : MonoBehaviour
 
     private void OnShootCompleted(ShootResult result)
     {
-        if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
-        {
-            UpdateGameModeState(GameModeState.End);
-            return;
-        }
+        CheckGamePhaseUpdate();
         
         // after a fixed wait time, update next shoot position if the shot was successful (perfect or accurate)
         StartCoroutine(CallNextShootPosition(result.Accuracy == ShootAccuracy.Perfect || result.Accuracy == ShootAccuracy.Accurate));
@@ -201,6 +214,17 @@ public class GameModeManager : MonoBehaviour
         }
     }
 
+    private void OnGlobalScoreUpdated(int score, bool isHumanPlayer)
+    {
+        if(!isHumanPlayer)
+            return;
+        
+        if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
+        {
+            UpdateGameModeState(GameModeState.End);
+        }
+    }
+    
     private IEnumerator CallNextShootPosition(bool changePosition)
     {
         yield return new WaitForSeconds(_gameModeSettings.NextShootWaitTime);
@@ -242,6 +266,13 @@ public class GameModeManager : MonoBehaviour
         _backboardBonusIsOn = false;
         RuntimeServices.GameModeService.BackboardBonus = 0;
         GameModeEvents.TriggerBackboardBonus(false, -1);
+    }
+
+    private IEnumerator CallRewardsPage()
+    {
+        yield return new WaitForSeconds(_gameModeSettings.ShowRewardsPageWaitTime);
+        
+        GameModeEvents.TriggerShowRewards();
     }
 }
 

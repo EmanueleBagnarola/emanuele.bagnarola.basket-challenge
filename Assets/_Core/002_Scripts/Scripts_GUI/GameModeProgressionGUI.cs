@@ -15,9 +15,6 @@ public class GameModeProgressionGUI : MonoBehaviour
     [SerializeField] private Slider _timerSlider;
     [SerializeField] private Image _fillImage;
     [SerializeField] private List<Color> _timerVisualizationColors = new List<Color>();
-    
-    [Header("End game config")]
-    [SerializeField] private FinalScoreGUI _finalScoreGUI;
 
     private bool _updateSliderVisual = false;
 
@@ -66,7 +63,6 @@ public class GameModeProgressionGUI : MonoBehaviour
             case GameModeState.Startup:
                 InitSlider();
                 ShowFill(false);
-                _finalScoreGUI.Show(false);
                 break;
             
             case GameModeState.Playing:
@@ -75,7 +71,6 @@ public class GameModeProgressionGUI : MonoBehaviour
                 break;
             
             case GameModeState.End:
-                _finalScoreGUI.Show(true);
                 break;
         }
     }

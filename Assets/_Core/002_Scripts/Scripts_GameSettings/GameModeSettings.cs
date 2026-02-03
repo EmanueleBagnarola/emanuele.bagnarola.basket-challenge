@@ -32,6 +32,10 @@ public class GameModeSettings : ScriptableObject
     
     [Header("Basic Score config")]
     [SerializeField, NonReorderable] private List<BasicScoreConfig> basicScoreConfigs = new List<BasicScoreConfig>();
+
+    [field: Header("Rewards config")]
+    [field: SerializeField] public float ShowRewardsPageWaitTime { get; private set; } = 2;
+    [field: SerializeField] public float CurrencyReward { get; private set; } = 100f;
     
     
     [field: Header("Debug")]

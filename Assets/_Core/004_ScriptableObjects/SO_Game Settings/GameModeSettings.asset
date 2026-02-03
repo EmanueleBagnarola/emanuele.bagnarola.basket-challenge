@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameModeSettings
   m_EditorClassIdentifier: 
   <StartGameCountdown>k__BackingField: 3
-  <GameModeDuration>k__BackingField: 30
+  <GameModeDuration>k__BackingField: 10
   <ShootInputMaxTime>k__BackingField: 1
   <NextShootWaitTime>k__BackingField: 0.7
   <BackboardBonusProbability>k__BackingField: 30
@@ -62,4 +62,6 @@ MonoBehaviour:
   - Score: 2
     Accuracy: 1
     Type: 1
+  <ShowRewardsPageWaitTime>k__BackingField: 3
+  <CurrencyReward>k__BackingField: 500
   <Debug_UseMaxInputTime>k__BackingField: 1
