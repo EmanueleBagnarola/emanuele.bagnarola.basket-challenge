@@ -10,6 +10,8 @@ public class CameraHandler : MonoBehaviour
     [SerializeField] private CinemachineVirtualCamera _baseCamera;
     [SerializeField] private CinemachineVirtualCamera _shootCamera;
     [SerializeField] private CinemachineVirtualCamera _endCamera;
+    [SerializeField] private CinemachineBrain _brainCamera;
+    [SerializeField] private ShootSettings _shootSettings;
     
     [Header("Shake settings")]
     [SerializeField] private CinemachineShake _shakeController;
@@ -27,6 +29,8 @@ public class CameraHandler : MonoBehaviour
         GameModeEvents.OnShootCompleted += OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
         GameModeEvents.OnGameModeStateUpdated += OnGameStateUpdated;
+
+        InitializeShootBlendTime();
     }
 
     private void OnDestroy()
@@ -35,6 +39,12 @@ public class CameraHandler : MonoBehaviour
         GameModeEvents.OnShootCompleted -= OnShootCompleted;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
         GameModeEvents.OnGameModeStateUpdated -= OnGameStateUpdated;
+    }
+
+    [Button]
+    public void InitializeShootBlendTime()
+    {
+        _brainCamera.m_CustomBlends.m_CustomBlends[0].m_Blend.m_Time = _shootSettings.ShootDuration;
     }
 
     /// <summary>
