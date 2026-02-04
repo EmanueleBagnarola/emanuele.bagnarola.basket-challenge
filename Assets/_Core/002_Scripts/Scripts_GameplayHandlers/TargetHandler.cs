@@ -46,14 +46,19 @@ public class TargetHandler : MonoBehaviour
         _initialFrameFailTargetPos = _frameFailTarget.position;
         
         InitializeRuntimeTargetService();
+
+        GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
     }
 
-    private void Update()
+    private void OnDestroy()
+    {
+        GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
+    }
+
+    private void OnShootPositionUpdated(bool _isHumanPlayer)
     {
         UpdateBackboardTargetPosition();
-
         UpdateFrameTargetRotation();
-        
         UpdateGroundTargetPosition();
     }
 

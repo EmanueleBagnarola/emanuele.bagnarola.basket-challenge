@@ -31,8 +31,6 @@ public class GameModeManager : MonoBehaviour
     
     private void Awake()
     {
-        Application.targetFrameRate = 60;
-        
         RuntimeServices.GameModeService.Reset();
         RuntimeServices.GameModeService.GameModeSettings = _gameModeSettings;
 

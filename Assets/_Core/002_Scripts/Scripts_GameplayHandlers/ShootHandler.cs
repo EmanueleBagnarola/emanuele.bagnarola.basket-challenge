@@ -23,8 +23,8 @@ public class ShootHandler : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(ResetBall(true, 0.0f));
-        StartCoroutine(ResetBall(false, 0.0f));
+        ResetBall(true);
+        ResetBall(false);
     }
 
     private void OnDestroy()
@@ -373,15 +373,14 @@ public class ShootHandler : MonoBehaviour
 
     private void OnShootPositionUpdated(bool isHumanPlayer)
     {
-        StartCoroutine(ResetBall(isHumanPlayer, 0.1f));
+        ResetBall(isHumanPlayer);
     }
 
-    private IEnumerator ResetBall(bool isHumanPlayer, float waitTime)
+    private void ResetBall(bool isHumanPlayer)
     {
-        yield return new WaitForSeconds(waitTime);
-
         if (isHumanPlayer)
         {
+            _playerShooterData.Ball.transform.DOKill();
             _playerShooterData.Ball.velocity = Vector3.zero;
             _playerShooterData.Ball.isKinematic = true;
             _playerShooterData.Ball.transform.SetParent(_playerShooterData.BallStartPosition);
@@ -389,6 +388,7 @@ public class ShootHandler : MonoBehaviour
         }
         else
         {
+            _aiShooterData.Ball.transform.DOKill();
             _aiShooterData.Ball.velocity = Vector3.zero;
             _aiShooterData.Ball.isKinematic = true;
             _aiShooterData.Ball.transform.SetParent(_aiShooterData.BallStartPosition);
