@@ -8,7 +8,8 @@ public class BallSpin : MonoBehaviour
 {
     [SerializeField] private Transform parentTransform;
     [SerializeField] private Vector3 _localSpinAxis;
-    [SerializeField] private float degreesPerSecond = 0.5f;
+    [SerializeField] private float _degreesPerSecond = 400f;
+    [SerializeField] private bool _isHumanPlayerBall;
 
     private Tween spinTween;
 
@@ -24,13 +25,19 @@ public class BallSpin : MonoBehaviour
         GameModeEvents.OnFirstShootTargetSet -= OnFirstShootTargetSet;
     }
 
-    private void OnShootPositionUpdated()
+    private void OnShootPositionUpdated(bool isHumanPlayer)
     {
+        if(_isHumanPlayerBall != isHumanPlayer)
+            return;
+        
         StopSpin();
     }
 
-    private void OnFirstShootTargetSet(Vector3 shootTarget)
+    private void OnFirstShootTargetSet(Vector3 shootTarget, bool isHumanPlayer)
     {
+        if(_isHumanPlayerBall != isHumanPlayer)
+            return;
+        
         SetParentRotationTarget(shootTarget);
     }
 
@@ -57,7 +64,7 @@ public class BallSpin : MonoBehaviour
                 1f,
                 t =>
                 {
-                    transform.Rotate(_localSpinAxis.normalized, degreesPerSecond * Time.deltaTime, Space.Self);
+                    transform.Rotate(_localSpinAxis.normalized, _degreesPerSecond * Time.deltaTime, Space.Self);
                 }
             )
             .SetLoops(-1)

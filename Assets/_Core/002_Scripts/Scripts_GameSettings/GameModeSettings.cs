@@ -35,7 +35,7 @@ public class GameModeSettings : ScriptableObject
 
     [field: Header("Rewards config")]
     [field: SerializeField] public float ShowRewardsPageWaitTime { get; private set; } = 2;
-    [field: SerializeField] public float CurrencyReward { get; private set; } = 100f;
+    [field: SerializeField, NonReorderable] private List<MoneyRewardConfig> moneyRewardConfigs = new List<MoneyRewardConfig>();
     
     
     [field: Header("Debug")]
@@ -87,6 +87,11 @@ public class GameModeSettings : ScriptableObject
 
         return BackboardBonusScoreConfigs[BackboardBonusScoreConfigs.Count - 1].Score;
     }
+
+    public int GetReward()
+    {
+        return moneyRewardConfigs.Find(c => c.Outcome == RuntimeServices.GameModeService.GameModeOutcome).MoneyReward;
+    }
 }
 
 /// <summary>
@@ -134,4 +139,10 @@ public class BackboardBonusScoreConfig
     public int RandomWeight;
 }
 
+[System.Serializable]
+public class MoneyRewardConfig
+{
+    public GameModeOutcome Outcome;
+    public int MoneyReward;
+}
 

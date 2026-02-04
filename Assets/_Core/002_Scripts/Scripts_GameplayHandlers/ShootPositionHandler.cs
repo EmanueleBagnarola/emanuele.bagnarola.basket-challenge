@@ -6,12 +6,10 @@ using UnityEngine;
 public class ShootPositionHandler : MonoBehaviour
 {
     [SerializeField] private Transform _playerTransform;
+    [SerializeField] private Transform _AITransform;
     [SerializeField] private Transform _shootRangeCenter;
     [SerializeField, NonReorderable] private List<ShootRange> _shootRangesByPhase; //NonReorderable attribute added to fix the editor serialized class visualization but
     
-    private ShootRange _currentShootRange;
-    private Vector3 _currentShootPosition;
-
     private void Awake()
     {
         GameModeEvents.OnResetShootPosition += OnResetShootPosition;
@@ -22,16 +20,19 @@ public class ShootPositionHandler : MonoBehaviour
         GameModeEvents.OnResetShootPosition -= OnResetShootPosition;
     }
 
-    private void OnResetShootPosition(bool changePosition)
+    private void OnResetShootPosition(bool changePosition, bool isHumanPlayer)
     {
-        _currentShootRange = GeShootPositionsPoolByPhase();
+        if (changePosition)
+        {
+            Vector3 updatedShootPosition = GetRandomPointOnShootRange(GeShootPositionsPoolByPhase());
+            
+            if (isHumanPlayer)
+                _playerTransform.position = updatedShootPosition;
+            else
+                _AITransform.position = updatedShootPosition;
+        }
         
-        if(changePosition)
-            _currentShootPosition = GetRandomPointOnShootRange(_currentShootRange);
-        
-        _playerTransform.position = _currentShootPosition;
-
-        GameModeEvents.TriggerShootPositionUpdated();
+        GameModeEvents.TriggerShootPositionUpdated(isHumanPlayer);
     }
     
     private Vector3 GetRandomPointOnShootRange(ShootRange range)

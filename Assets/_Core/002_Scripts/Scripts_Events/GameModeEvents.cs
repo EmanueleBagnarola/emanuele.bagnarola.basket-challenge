@@ -7,6 +7,7 @@ public static class GameModeEvents
     public delegate void OnCountdownTickHandler(int currentCountdownTimer);
     public static event OnCountdownTickHandler OnCountdownTick;
     
+    
     public delegate void OnGameModeStateUpdatedHandler(GameModeState gameModeState);
     public static event OnGameModeStateUpdatedHandler OnGameModeStateUpdated;
     
@@ -19,7 +20,7 @@ public static class GameModeEvents
     public static event OnShootAttemptHandler OnShootAttempt;
     
 
-    public delegate void OnFirstShootTargetSetHandler(Vector3 shootTarget);
+    public delegate void OnFirstShootTargetSetHandler(Vector3 shootTarget, bool isHumanPlayer);
     public static event OnFirstShootTargetSetHandler OnFirstShootTargetSet;
     
 
@@ -30,11 +31,11 @@ public static class GameModeEvents
     public delegate void OnScoreHandler(ShootResult result, int score);
     public static event OnScoreHandler OnShootScore;
 
-    public delegate void OnResetShootPositionHandler(bool changePosition);
+    public delegate void OnResetShootPositionHandler(bool changePosition, bool isHumanPlaye);
     public static event OnResetShootPositionHandler OnResetShootPosition;
     
     
-    public delegate void OnShootPositionUpdatedHandler();
+    public delegate void OnShootPositionUpdatedHandler(bool isHumanPlayer);
     public static event OnShootPositionUpdatedHandler OnShootPositionUpdated;
 
 
@@ -83,9 +84,9 @@ public static class GameModeEvents
     /// <summary>
     /// Called when the first shoot target is selected during the shoot curve animation system
     /// </summary>
-    public static void TriggerFirstShootTargetSet(Vector3 shootTarget)
+    public static void TriggerFirstShootTargetSet(Vector3 shootTarget, bool isHumanPlayer)
     {
-        OnFirstShootTargetSet?.Invoke(shootTarget);
+        OnFirstShootTargetSet?.Invoke(shootTarget, isHumanPlayer);
     }
 
     /// <summary>
@@ -100,6 +101,7 @@ public static class GameModeEvents
     /// <summary>
     /// Called when the current shot score is decided
     /// </summary>
+    /// <param name="result"></param>
     /// <param name="score"></param>
     public static void TriggerShootScore(ShootResult result, int score)
     {
@@ -109,17 +111,17 @@ public static class GameModeEvents
     /// <summary>
     /// Called when the system is ready to call the next shot position
     /// </summary>
-    public static void TriggerResetShootPosition(bool changePosition)
+    public static void TriggerResetShootPosition(bool changePosition, bool isHumanPlayer)
     {
-        OnResetShootPosition?.Invoke(changePosition);
+        OnResetShootPosition?.Invoke(changePosition, isHumanPlayer);
     }
 
     /// <summary>
     /// Called when the next shot position is set
     /// </summary>
-    public static void TriggerShootPositionUpdated()
+    public static void TriggerShootPositionUpdated(bool isHumanPlayer)
     {
-        OnShootPositionUpdated?.Invoke();
+        OnShootPositionUpdated?.Invoke(isHumanPlayer);
     }
 
     /// <summary>

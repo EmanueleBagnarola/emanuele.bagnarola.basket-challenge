@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GlobalScoreGUI : MonoBehaviour
@@ -26,7 +27,7 @@ public class GlobalScoreGUI : MonoBehaviour
         }
         else
         {
-            //aiLabelGUI.UpdateScore(score);
+            _aiLabelGUI.UpdateScore(score);
         }
     }
 }

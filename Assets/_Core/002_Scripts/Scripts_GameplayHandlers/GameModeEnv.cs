@@ -37,8 +37,9 @@ public enum GameModePhase
     Late,
 }
 
-public enum ShootPhase
+public enum PlayerShootPhase
 {
+    WaitForShot,
     Started,
     Completed,
 }
@@ -50,5 +51,13 @@ public enum GameModeState
     WaitForEnd,
     End,
     Rewards,
+}
+
+
+public enum GameModeOutcome
+{
+    Win,
+    Draw,
+    Lose
 }
 

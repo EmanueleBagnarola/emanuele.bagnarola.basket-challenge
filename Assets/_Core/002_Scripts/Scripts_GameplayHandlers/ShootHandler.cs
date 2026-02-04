@@ -8,34 +8,28 @@ using Random = Unity.Mathematics.Random;
 public class ShootHandler : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform _playerTransform;
-    [SerializeField] private Rigidbody _ballBody;
-    // Where the ball will be repositioned after each shooting
-    [SerializeField] private Transform _shootStartPos;
-
+    [SerializeField] private ShooterData _playerShooterData;
+    [SerializeField] private ShooterData _aiShooterData;
+    
     // Settings used for the shooting system
     [Header("Shoot Settings")]
     [SerializeField] private ShootSettings _shootSettings;
-
-    // Cache the current shoot result to call the shoot completed event
-    private ShootResult _currentShootResult;
-    private Vector3 _lastBouncePosition;
-    private bool _lastBounceFound = false;
-
+    
     private void Awake()
     {
-        GameModeEvents.OnShootAttempt += Shoot;
+        GameModeEvents.OnShootAttempt += OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
     }
 
     private void Start()
     {
-        ResetBall();
+        StartCoroutine(ResetBall(true, 0.0f));
+        StartCoroutine(ResetBall(false, 0.0f));
     }
 
     private void OnDestroy()
     {
-        GameModeEvents.OnShootAttempt -= Shoot;
+        GameModeEvents.OnShootAttempt -= OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
 
@@ -44,11 +38,22 @@ public class ShootHandler : MonoBehaviour
     /// </summary>
     /// <param name="shootVelocity"></param>
     /// <param name="isHumanPlayer"></param>
-    private void Shoot(float shootVelocity, bool isHumanPlayer)
+    private void OnShootAttempt(float shootVelocity, bool isHumanPlayer)
     {
         ShootResult result = GetShootResult(shootVelocity, isHumanPlayer);
         Debug.Log($"ShootResult | Type: {result.Type} | Accuracy: {result.Accuracy} | Strength: {result.Strength}");
-        StartShoot(GetShootPath(result.Type, result.Accuracy, result.Strength));
+        
+        ShooterData shooterData = isHumanPlayer ? _playerShooterData : _aiShooterData;
+
+        ShootContext context = new ShootContext()
+        {
+            IsHuman = isHumanPlayer,
+            Path = GetShootPath(result.Type, result.Accuracy, result.Strength, result.IsHumanPlayer),
+            Result = result,
+            Shooter = shooterData,
+        };
+        
+        StartShoot(context);
     }
 
     /// <summary>
@@ -109,10 +114,8 @@ public class ShootHandler : MonoBehaviour
                 }
             }
         }
-
-        _currentShootResult = new ShootResult(type, accuracy, GetShootVelocityType(shootVelocity), isHumanPlayer);
-
-        return _currentShootResult;
+        
+        return new ShootResult(type, accuracy, GetShootVelocityType(shootVelocity), isHumanPlayer);;
     }
 
     /// <summary>
@@ -132,72 +135,53 @@ public class ShootHandler : MonoBehaviour
     /// <summary>
     /// Starts the shoot curve path
     /// </summary>
-    /// <param name="path"></param>
-    private void StartShoot(ShootPath path)
+    /// <param name="shootContext"></param>
+    private void StartShoot(ShootContext shootContext)
     {
-        if (path.Steps == null || path.Steps.Count == 0)
+        if (shootContext.Path.Steps == null || shootContext.Path.Steps.Count == 0)
             return;
 
         // Call the event passing the target of the first step of the curve path
-        GameModeEvents.TriggerFirstShootTargetSet(path.Steps[0].Target);
+        GameModeEvents.TriggerFirstShootTargetSet(shootContext.Path.Steps[0].Target, shootContext.Shooter.IsHumanPlayer);
 
         // Execute the first curve step
-        ExecuteStep(path, 0);
+        ExecuteStep(shootContext, 0);
 
         // Get the current total time to consider the shot completed, based on path time given by the current shot result
-        float shotValidateTime = _shootSettings.GetShotValidateTime(_currentShootResult);
+        float shotValidateTime = _shootSettings.GetShotValidateTime(shootContext.Result);
         Debug.Log($"shotValidateTime: {shotValidateTime}");
         
-        Invoke(nameof(CallShotCompleted), shotValidateTime);
+        StartCoroutine(CallShotCompleted(shootContext, shotValidateTime));
     }
 
     /// <summary>
     /// Execute the current path step (based on index)
     /// </summary>
-    /// <param name="path"></param>
+    /// <param name="context"></param>
     /// <param name="index"></param>
-    private void ExecuteStep(ShootPath path, int index)
+    private void ExecuteStep(ShootContext context, int index)
     {
-        if (!_lastBounceFound)
+        if (!context.LastBounceFound)
         {
-            _lastBouncePosition = _playerTransform.transform.position;
+            context.LastBouncePosition = context.Shooter.CharacterTransform.position;
         }
 
         // if every curve path step is handled, call the shot completed 
-        if (index >= path.Steps.Count)
+        if (index >= context.Path.Steps.Count)
         {
             //CallShotCompleted();
             return;
         }
 
-        // Sequence seq = DOTween.Sequence();
-        //
-        // for (int i = 0; i < path.Steps.Count; i++)
-        // {
-        //     Ease ease = i == 0 ? shootEase : bounceEase;
-        //
-        //     Tween t = _ballTransform
-        //         .DOJump(path.Steps[i].Target, path.Steps[i].Power, 1, path.Steps[i].Duration)
-        //         .SetEase(ease);
-        //
-        //     seq.Append(t);
-        //     seq.AppendInterval(-path.Steps[i].Duration * 0.25f);
-        // }
-        //
-        // seq.OnComplete(() =>
-        // {
-        //     EnablePhysics();
-        //     GameModeEvents.TriggerShootCompleted(_currentShootResult);
-        // });
-
-        ShootPathStep step = path.Steps[index];
+        ShootPathStep step = context.Path.Steps[index];
 
         HandleShootStep(step, () =>
             {
-                ExecuteStep(path, index + 1);
+                ExecuteStep(context, index + 1);
                 step.OnStepStarted?.Invoke();
             },
-            index == 0);
+            index == 0,
+            context);
     }
 
     /// <summary>
@@ -205,67 +189,76 @@ public class ShootHandler : MonoBehaviour
     /// </summary>
     /// <param name="step"></param>
     /// <param name="onComplete"></param>
-    /// <param name="_firstStep"></param>
-    private void HandleShootStep(ShootPathStep step, Action onComplete, bool _firstStep)
+    /// <param name="firstStep"></param>
+    /// <param name="context"></param>
+    private void HandleShootStep(ShootPathStep step, Action onComplete, bool firstStep, ShootContext context)
     {
         if (step.LastBounce)
         {
-            _lastBouncePosition = step.Target;
-            _lastBounceFound = true;
+            context.LastBouncePosition = step.Target;
+            context.LastBounceFound = true;
         }
 
-        Ease ease = _firstStep ? _shootSettings.ShootEase : _shootSettings.BounceEase;
+        Ease ease = firstStep ? _shootSettings.ShootEase : _shootSettings.BounceEase;
 
-        _ballBody.transform.DOJump(step.Target, step.Power, 1, step.Duration).SetEase(ease).OnComplete(() => onComplete?.Invoke());
+        context.Shooter.Ball.transform.DOKill();
+        context.Shooter.Ball.transform.DOJump(step.Target, step.Power, 1, step.Duration).SetEase(ease).OnComplete(() => onComplete?.Invoke());
     }
 
-    private void CallShotCompleted()
+    private IEnumerator CallShotCompleted(ShootContext context, float waitTime)
     {
-        EnablePhysics(_lastBouncePosition);
+        yield return new WaitForSeconds(waitTime);
+        
+        EnablePhysics(context.LastBouncePosition, context.Shooter);
 
         // Update the runtime shoot phase value
-        RuntimeServices.GameModeService.ShootPhase = ShootPhase.Completed;
+        if (context.IsHuman)
+        {
+            RuntimeServices.GameModeService.PlayerShootPhase = PlayerShootPhase.Completed;
+        }
         
-        GameModeEvents.TriggerShootCompleted(_currentShootResult);
+        GameModeEvents.TriggerShootCompleted(context.Result);
     }
 
-    private void EnablePhysics(Vector3 lastBouncePosition)
+    private void EnablePhysics(Vector3 lastBouncePosition, ShooterData shooterData)
     {
-        _ballBody.isKinematic = false;
+        shooterData.Ball.isKinematic = false;
 
         // direction from last bounce position
-        Vector3 bounceDirection = (_ballBody.position - lastBouncePosition).normalized;
+        Vector3 bounceDirection = (shooterData.Ball.position - lastBouncePosition).normalized;
 
         Vector3 force = bounceDirection + Vector3.down * _shootSettings.FinalSimulatedBounceMultiplier;
 
-        _ballBody.velocity = Vector3.zero;
+        shooterData.Ball.velocity = Vector3.zero;
         // _ballBody.angularVelocity = Vector3.zero;
 
-        _ballBody.AddForce(force, ForceMode.Impulse);
+        shooterData.Ball.AddForce(force, ForceMode.Impulse);
     }
 
     /// <summary>
     /// Generate a path getting the info from the TargetHandler, creating a step for every valid target 
     /// </summary>
     /// <param name="shootType"></param>
-    /// <param name="shootDirection"></param>
     /// <param name="accuracyType"></param>
     /// <param name="shootVelocityType"></param>
+    /// <param name="isHumanPlayer"></param>
     /// <returns></returns>
-    private ShootPath GetShootPath(ShootType shootType, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType)
+    private ShootPath GetShootPath(ShootType shootType, ShootAccuracy accuracyType, ShootVelocityType shootVelocityType, bool isHumanPlayer)
     {
         ShootPath path = new ShootPath();
 
         Vector3 groundFailAreaTargetPos = Vector3.zero;
 
+        RuntimeServices.TargetState targetState = isHumanPlayer ? RuntimeServices.TargetService.PlayerTargetState : RuntimeServices.TargetService.AITargetState;
+
         // the position from the backboard target adding a small randomized offset inside a circe
-        Vector3 backboardTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardTarget.position, false);
+        Vector3 backboardTargetPos = GetRandomOffsetInsideCircle(targetState.BackboardTargetPos, false);
 
         // the position from the frame target adding a small randomized offset inside a circe
-        Vector3 frameTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameTarget.position);
+        Vector3 frameTargetPos = GetRandomOffsetInsideCircle(targetState.FrameTargetPos);
 
         // the position from the frame fail target adding a small randomized offset inside a circe
-        Vector3 frameFailTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.FrameFailTarget.position);
+        Vector3 frameFailTargetPos = GetRandomOffsetInsideCircle(targetState.FrameFailTargetPos);
 
         switch (shootVelocityType)
         {
@@ -281,12 +274,12 @@ public class ShootHandler : MonoBehaviour
             {
                 // in case of failing the curve is set to end to a ground target that adapts its position based on player position
                 case ShootType.Direct:
-                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.DirectFailGroundTarget.position);
+                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(targetState.DirectFailGroundTargetPos);
                     break;
 
                 // in case of failing the curve is set to end to a ground target that adapts its position based on a sequence of positions that simulate bouncing
                 case ShootType.Backboard:
-                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(RuntimeServices.TargetService.BackboardFailGroundTarget.position);
+                    groundFailAreaTargetPos = GetRandomOffsetInsideCircle(targetState.BackboardFailGroundTargetPos);
                     break;
             }
         }
@@ -299,7 +292,7 @@ public class ShootHandler : MonoBehaviour
                 {
                     // directly to shoot scoring
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTarget.position, lastValidStep:true);
+                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTargetPos);
                         path.Steps.Add(shootToScore);
                         break;
 
@@ -307,7 +300,7 @@ public class ShootHandler : MonoBehaviour
                     case ShootAccuracy.Accurate:
                         ShootPathStep shootToRim = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration,  RuntimeServices.TargetService.ScoreTarget.position, lastValidStep:true);
+                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration,  RuntimeServices.TargetService.ScoreTargetPos);
                         path.Steps.Add(rimToScore);
                         break;
 
@@ -330,7 +323,7 @@ public class ShootHandler : MonoBehaviour
                 {
                     // from backboard to score target
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, RuntimeServices.TargetService.ScoreTargetPos);
                         path.Steps.Add(shootToScore);
                         break;
 
@@ -338,7 +331,7 @@ public class ShootHandler : MonoBehaviour
                     case ShootAccuracy.Accurate:
                         ShootPathStep shootToRim = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTarget.position);
+                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTargetPos);
                         path.Steps.Add(rimToScore);
                         break;
 
@@ -369,16 +362,27 @@ public class ShootHandler : MonoBehaviour
         return newPosInRadius;
     }
 
-    private void OnShootPositionUpdated()
+    private void OnShootPositionUpdated(bool isHumanPlayer)
     {
-        Invoke(nameof(ResetBall), 0.01f);
+        StartCoroutine(ResetBall(isHumanPlayer, 0.01f));
     }
 
-    private void ResetBall()
+    private IEnumerator ResetBall(bool isHumanPlayer, float waitTime)
     {
-        _ballBody.velocity = Vector3.zero;
-        _ballBody.isKinematic = true;
-        _ballBody.transform.position = _shootStartPos.position;
+        yield return new WaitForSeconds(waitTime);
+
+        if (isHumanPlayer)
+        {
+            _playerShooterData.Ball.velocity = Vector3.zero;
+            _playerShooterData.Ball.isKinematic = true;
+            _playerShooterData.Ball.transform.position = _playerShooterData.BallStartPosition.position;
+        }
+        else
+        {
+            _aiShooterData.Ball.velocity = Vector3.zero;
+            _aiShooterData.Ball.isKinematic = true;
+            _aiShooterData.Ball.transform.position = _aiShooterData.BallStartPosition.position;
+        }
     }
 }
 
@@ -410,16 +414,12 @@ public class ShootPathStep
     // Check if this was the last step the let the next shoot timer know when to start and to handle extra ball physics
     public bool LastBounce;
 
-    // Check if this was the last step from which start time countdown to reset next position
-    public bool LastValidStep;
-
-    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, bool lastValidStep = false, Action onStepStarted = null)
+    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, Action onStepStarted = null)
     {
         Power = power;
         Duration = duration;
         Target = target;
         LastBounce = lastBounce;
-        LastValidStep = lastValidStep;
         OnStepStarted = onStepStarted;
     }
 }
@@ -450,4 +450,30 @@ public class ShootResult
         Strength = strength;
         IsHumanPlayer = isHumanPlayer;
     }
+}
+
+[System.Serializable]
+public class ShooterData
+{
+    public Transform CharacterTransform;
+    public Rigidbody Ball;
+    
+    // Where the ball will be repositioned after each shooting
+    public Transform BallStartPosition;
+
+    public bool IsHumanPlayer;
+}
+
+/// <summary>
+/// Create a separate context for the current shoot attempt handler, separated between player and AI
+/// </summary>
+public class ShootContext
+{
+    public bool IsHuman;
+    public ShooterData Shooter;
+    public ShootResult Result;
+    public ShootPath Path;
+    
+    public Vector3 LastBouncePosition;
+    public bool LastBounceFound;
 }

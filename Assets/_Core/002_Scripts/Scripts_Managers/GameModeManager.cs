@@ -62,7 +62,8 @@ public class GameModeManager : MonoBehaviour
     {
         UpdateGameModePhase(GameModePhase.Early);
         UpdateGameModeState(GameModeState.Startup);
-        UpdateShootPosition(true);
+        UpdateShootPosition(true, true);
+        UpdateShootPosition(true, false);
         StartCountdown();
     }
 
@@ -117,16 +118,18 @@ public class GameModeManager : MonoBehaviour
 
         if (_currentGameModeTimer <= 0)
         {
-            switch (RuntimeServices.GameModeService.ShootPhase)
+            switch (RuntimeServices.GameModeService.PlayerShootPhase)
             {
-                case ShootPhase.Completed:
-                    if(RuntimeServices.GameModeService.GameModeState != GameModeState.End)
-                        UpdateGameModeState(GameModeState.End);
+                case PlayerShootPhase.WaitForShot: 
+                    UpdateGameModeState(GameModeState.End);
                     break;
                 
-                case ShootPhase.Started:
-                    if(RuntimeServices.GameModeService.GameModeState != GameModeState.WaitForEnd)
-                        UpdateGameModeState(GameModeState.WaitForEnd);
+                case PlayerShootPhase.Completed:
+                    UpdateGameModeState(GameModeState.End);
+                    break;
+                
+                case PlayerShootPhase.Started:
+                    UpdateGameModeState(GameModeState.WaitForEnd);
                     break;
             }
         }
@@ -152,6 +155,9 @@ public class GameModeManager : MonoBehaviour
 
     private void UpdateGameModeState(GameModeState gameModeState)
     {
+        if(RuntimeServices.GameModeService.GameModeState == gameModeState)
+            return;
+
         switch (gameModeState)
         {
             case GameModeState.Playing:
@@ -160,6 +166,7 @@ public class GameModeManager : MonoBehaviour
                 break;
             
             case GameModeState.End:
+                SetGameModeOutcome();
                 StartCoroutine(CallRewardsPage());
                 break;
         }
@@ -191,10 +198,14 @@ public class GameModeManager : MonoBehaviour
 
     private void OnShootCompleted(ShootResult result)
     {
+        // check if game phase needs to be updated based on current timer
         CheckGamePhaseUpdate();
+
+        // reset the player shoot phase
+        RuntimeServices.GameModeService.PlayerShootPhase = PlayerShootPhase.WaitForShot;
         
         // after a fixed wait time, update next shoot position if the shot was successful (perfect or accurate)
-        StartCoroutine(CallNextShootPosition(result.Accuracy == ShootAccuracy.Perfect || result.Accuracy == ShootAccuracy.Accurate));
+        StartCoroutine(CallNextShootPosition(result.Accuracy == ShootAccuracy.Perfect || result.Accuracy == ShootAccuracy.Accurate, result.IsHumanPlayer));
     }
 
     private void OnShootScore(ShootResult result, int score)
@@ -225,17 +236,17 @@ public class GameModeManager : MonoBehaviour
         }
     }
     
-    private IEnumerator CallNextShootPosition(bool changePosition)
+    private IEnumerator CallNextShootPosition(bool changePosition, bool isHumanPlayer)
     {
         yield return new WaitForSeconds(_gameModeSettings.NextShootWaitTime);
         
         // Update new shoot position
-        UpdateShootPosition(changePosition);
+        UpdateShootPosition(changePosition, isHumanPlayer);
     }
 
-    private void UpdateShootPosition(bool changePosition)
+    private void UpdateShootPosition(bool changePosition, bool isHumanPlayer)
     {
-        GameModeEvents.TriggerResetShootPosition(changePosition);
+        GameModeEvents.TriggerResetShootPosition(changePosition, isHumanPlayer);
     }
 
     private void CheckBackboardBonus()
@@ -268,6 +279,14 @@ public class GameModeManager : MonoBehaviour
         GameModeEvents.TriggerBackboardBonus(false, -1);
     }
 
+    private void SetGameModeOutcome()
+    {
+        bool humanPlayerWin = RuntimeServices.GameModeService.PlayerScore > RuntimeServices.GameModeService.AIScore;
+        bool draw = RuntimeServices.GameModeService.PlayerScore == RuntimeServices.GameModeService.AIScore;
+
+        RuntimeServices.GameModeService.GameModeOutcome = draw ? GameModeOutcome.Draw : (humanPlayerWin ? GameModeOutcome.Win : GameModeOutcome.Lose);
+    }
+    
     private IEnumerator CallRewardsPage()
     {
         yield return new WaitForSeconds(_gameModeSettings.ShowRewardsPageWaitTime);

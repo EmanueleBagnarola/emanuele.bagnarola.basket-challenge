@@ -81,9 +81,9 @@ public class CameraHandler : MonoBehaviour
         HandleShootCamera();
     }
 
-    private void OnShootPositionUpdated()
+    private void OnShootPositionUpdated(bool _isHumanPlayer)
     {
-        if(RuntimeServices.GameModeService.GameModeState != GameModeState.Playing)
+        if(RuntimeServices.GameModeService.GameModeState != GameModeState.Playing || !_isHumanPlayer)
             return;
         
         ResetCameras();
@@ -105,6 +105,9 @@ public class CameraHandler : MonoBehaviour
     /// <param name="result"></param>
     private void OnShootCompleted(ShootResult result)
     {
+        if(!result.IsHumanPlayer)
+            return;
+        
         if(result.Accuracy != ShootAccuracy.Perfect || result.Type == ShootType.Backboard)
             return;
         

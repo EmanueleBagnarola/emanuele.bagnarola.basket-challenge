@@ -14,6 +14,10 @@ public class FinalScoreGUI : MonoBehaviour
     [SerializeField] private Transform _visualPanel;
     [SerializeField] private TMP_Text _playerScoreText;
     [SerializeField] private TMP_Text _aiScoreText;
+    [SerializeField] private TMP_Text _outcomeText;
+    [SerializeField] private string _winOutcomeText = "You Win!";
+    [SerializeField] private string _loseOutcomeText = "You Lose...";
+    [SerializeField] private string _drawOutcomeText = "Draw";
     
     [Header("Animations")]
     [SerializeField] private float _animationDuration = 0.5f;
@@ -51,8 +55,12 @@ public class FinalScoreGUI : MonoBehaviour
         
         if (show)
         {
+            // panel animation
             _visualPanel.transform.localScale = Vector3.zero;
             _visualPanel.transform.DOScale(Vector3.one, _animationDuration);
+            
+            // Set outcome text
+            _outcomeText.text = RuntimeServices.GameModeService.GameModeOutcome == GameModeOutcome.Draw ? _drawOutcomeText : (RuntimeServices.GameModeService.GameModeOutcome == GameModeOutcome.Win ? _winOutcomeText : _loseOutcomeText);
         }
     }
 }

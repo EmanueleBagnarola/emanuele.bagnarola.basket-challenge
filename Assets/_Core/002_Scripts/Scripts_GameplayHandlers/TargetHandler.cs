@@ -8,6 +8,7 @@ public class TargetHandler : MonoBehaviour
     [Header("ADAPTABLE TARGETS")]
     [Header("Player config")]
     [SerializeField] private Transform _playerTransform;
+    [SerializeField] private Transform _aiTransform;
     [SerializeField] private float _minPlayerX;
     [SerializeField] private float _maxPlayerX;
 
@@ -36,8 +37,14 @@ public class TargetHandler : MonoBehaviour
     [Header("Score target config")]
     [SerializeField] private Transform _scoreTarget;
 
+    private Vector3 _initialFrameTargetPos;
+    private Vector3 _initialFrameFailTargetPos;
+
     private void Awake()
     {
+        _initialFrameTargetPos = _frameTarget.position;
+        _initialFrameFailTargetPos = _frameFailTarget.position;
+        
         InitializeRuntimeTargetService();
     }
 
@@ -55,13 +62,7 @@ public class TargetHandler : MonoBehaviour
     /// </summary>
     private void InitializeRuntimeTargetService()
     {
-        
-        RuntimeServices.TargetService.ScoreTarget = _scoreTarget;
-        RuntimeServices.TargetService.BackboardTarget = _backboardTarget;
-        RuntimeServices.TargetService.FrameTarget = _frameTarget;
-        RuntimeServices.TargetService.FrameFailTarget = _frameFailTarget;
-        RuntimeServices.TargetService.BackboardFailGroundTarget = _backboardFailGroundTarget;
-        RuntimeServices.TargetService.DirectFailGroundTarget = _directFailGroundTarget;
+        RuntimeServices.TargetService.ScoreTargetPos = _scoreTarget.position;
     }
 
     /// <summary>
@@ -69,8 +70,16 @@ public class TargetHandler : MonoBehaviour
     /// </summary>
     private void UpdateBackboardTargetPosition()
     {
-        float backboardTargetX = GameUtils.Map(_playerTransform.position.x, _minPlayerX, _maxPlayerX, _minTargetX, _maxTargetX);
-        _backboardTarget.localPosition = new Vector3(Mathf.Clamp(backboardTargetX, _minPlayerX, _maxTargetX), _backboardTarget.localPosition.y, _backboardTarget.localPosition.z);
+        float playerBackboardTargetX = GetBackboardTargetX(_playerTransform);
+        float aiBackboardTargetX = GetBackboardTargetX(_aiTransform);
+        
+        RuntimeServices.TargetService.PlayerTargetState.BackboardTargetPos = new Vector3(Mathf.Clamp(playerBackboardTargetX, _minPlayerX, _maxTargetX), _backboardTarget.position.y, _backboardTarget.position.z);
+        RuntimeServices.TargetService.AITargetState.BackboardTargetPos = new Vector3(Mathf.Clamp(aiBackboardTargetX, _minPlayerX, _maxTargetX), _backboardTarget.position.y, _backboardTarget.position.z);
+    }
+
+    private float GetBackboardTargetX(Transform _characterTransform)
+    {
+        return GameUtils.Map(_characterTransform.position.x, _minPlayerX, _maxPlayerX, _minTargetX, _maxTargetX);
     }
 
     /// <summary>
@@ -78,8 +87,22 @@ public class TargetHandler : MonoBehaviour
     /// </summary>
     private void UpdateFrameTargetRotation()
     {
-        float frameTargetAngle = GameUtils.Map(_backboardTarget.localPosition.x, _minTargetX, _maxTargetX, _minRot, _maxRot);
-        _frameTargetPivot.localEulerAngles = new Vector3(0, Mathf.Clamp(frameTargetAngle, _minRot, _maxRot), 0);
+        SetFrameTargetPosition(RuntimeServices.TargetService.PlayerTargetState.BackboardTargetPos, out RuntimeServices.TargetService.PlayerTargetState.FrameTargetPos, out RuntimeServices.TargetService.PlayerTargetState.FrameFailTargetPos);
+        SetFrameTargetPosition(RuntimeServices.TargetService.AITargetState.BackboardTargetPos, out RuntimeServices.TargetService.AITargetState.FrameTargetPos, out RuntimeServices.TargetService.AITargetState.FrameFailTargetPos);
+    }
+
+    private void SetFrameTargetPosition(Vector3 backboardTargetPos, out Vector3 destinationFrameTargetPos, out Vector3 destinationFrameFailTargetPos)
+    {
+        float frameTargetAngle = GameUtils.Map( backboardTargetPos.x, _minTargetX, _maxTargetX, _minRot, _maxRot);
+        frameTargetAngle = Mathf.Clamp(frameTargetAngle, _minRot, _maxRot);
+        
+        Vector3 frameTargetOffset = _initialFrameTargetPos - _frameTargetPivot.position;
+        Vector3 frameFailTargetOffset = _initialFrameFailTargetPos - _frameTargetPivot.position;
+        
+        Quaternion framePivotRot = Quaternion.AngleAxis(frameTargetAngle, Vector3.up);
+        
+        destinationFrameTargetPos = _frameTargetPivot.position + framePivotRot * frameTargetOffset;
+        destinationFrameFailTargetPos = _frameTargetPivot.position + framePivotRot * frameFailTargetOffset;
     }
 
     /// <summary>
@@ -87,10 +110,22 @@ public class TargetHandler : MonoBehaviour
     /// </summary>
     private void UpdateGroundTargetPosition()
     {
-        float backboardGroundTargetX = GameUtils.Map(_backboardTarget.localPosition.x, _maxTargetX, _minTargetX, _minBackboardGroundX, _maxBackboardGroundX);
-        _backboardFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(backboardGroundTargetX, _minBackboardGroundX, _maxBackboardGroundX), _backboardFailGroundTarget.localPosition.y, _backboardFailGroundTarget.localPosition.z);
-        
-        float directGroundTargetX = GameUtils.Map(_playerTransform.localPosition.x, _minPlayerX, _maxPlayerX, _minDirectGroundX, _maxDirectGroundX);
-        _directFailGroundTarget.localPosition = new Vector3(Mathf.Clamp(directGroundTargetX, _minDirectGroundX, _maxDirectGroundX), _directFailGroundTarget.localPosition.y, _directFailGroundTarget.localPosition.z);
+        RuntimeServices.TargetService.PlayerTargetState.BackboardFailGroundTargetPos = GetBackboardGroundTarget(RuntimeServices.TargetService.PlayerTargetState.BackboardTargetPos);
+        RuntimeServices.TargetService.AITargetState.BackboardFailGroundTargetPos = GetBackboardGroundTarget(RuntimeServices.TargetService.AITargetState.BackboardTargetPos);
+
+        RuntimeServices.TargetService.PlayerTargetState.DirectFailGroundTargetPos = GetDirectGroundTarget(_playerTransform);
+        RuntimeServices.TargetService.AITargetState.DirectFailGroundTargetPos = GetDirectGroundTarget(_aiTransform);
+    }
+
+    private Vector3 GetBackboardGroundTarget(Vector3 backboardTargetPos)
+    {
+        float backboardGroundTargetX = GameUtils.Map(backboardTargetPos.x, _maxTargetX, _minTargetX, _minBackboardGroundX, _maxBackboardGroundX);
+        return new Vector3(Mathf.Clamp(backboardGroundTargetX, _minBackboardGroundX, _maxBackboardGroundX), _backboardFailGroundTarget.position.y, _backboardFailGroundTarget.position.z);
+    }
+
+    private Vector3 GetDirectGroundTarget(Transform characterTransform)
+    {
+        float directGroundTargetX = GameUtils.Map(characterTransform.position.x, _minPlayerX, _maxPlayerX, _minDirectGroundX, _maxDirectGroundX);
+        return new Vector3(Mathf.Clamp(directGroundTargetX, _minDirectGroundX, _maxDirectGroundX), _directFailGroundTarget.position.y, _directFailGroundTarget.position.z);
     }
 }
