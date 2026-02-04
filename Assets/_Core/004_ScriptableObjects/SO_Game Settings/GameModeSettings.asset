@@ -67,7 +67,7 @@ MonoBehaviour:
   - Outcome: 0
     MoneyReward: 500
   - Outcome: 2
-    MoneyReward: 250
-  - Outcome: 1
     MoneyReward: 0
+  - Outcome: 1
+    MoneyReward: 250
   <Debug_UseMaxInputTime>k__BackingField: 1

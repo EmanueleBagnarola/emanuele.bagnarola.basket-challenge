@@ -49,8 +49,7 @@ public enum GameModeState
     Startup,
     Playing,
     WaitForEnd,
-    End,
-    Rewards,
+    End, 
 }
 
 

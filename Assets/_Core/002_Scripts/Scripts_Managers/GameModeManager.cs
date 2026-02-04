@@ -118,20 +118,32 @@ public class GameModeManager : MonoBehaviour
 
         if (_currentGameModeTimer <= 0)
         {
-            switch (RuntimeServices.GameModeService.PlayerShootPhase)
-            {
-                case PlayerShootPhase.WaitForShot: 
-                    UpdateGameModeState(GameModeState.End);
-                    break;
-                
-                case PlayerShootPhase.Completed:
-                    UpdateGameModeState(GameModeState.End);
-                    break;
-                
-                case PlayerShootPhase.Started:
-                    UpdateGameModeState(GameModeState.WaitForEnd);
-                    break;
-            }
+            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot
+               && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot)
+                UpdateGameModeState(GameModeState.End);
+            
+            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed
+               && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed)
+                UpdateGameModeState(GameModeState.End);
+            
+            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started
+               || RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started)
+                UpdateGameModeState(GameModeState.WaitForEnd);
+            //
+            // switch (RuntimeServices.GameModeService.PlayerShootPhase)
+            // {
+            //     case PlayerShootPhase.WaitForShot: 
+            //         UpdateGameModeState(GameModeState.End);
+            //         break;
+            //     
+            //     case PlayerShootPhase.Completed:
+            //         UpdateGameModeState(GameModeState.End);
+            //         break;
+            //     
+            //     case PlayerShootPhase.Started:
+            //         UpdateGameModeState(GameModeState.WaitForEnd);
+            //         break;
+            // }
         }
     }
     
@@ -202,7 +214,14 @@ public class GameModeManager : MonoBehaviour
         CheckGamePhaseUpdate();
 
         // reset the player shoot phase
-        RuntimeServices.GameModeService.PlayerShootPhase = PlayerShootPhase.WaitForShot;
+        if (result.IsHumanPlayer)
+        {
+            RuntimeServices.GameModeService.HumanPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+        }
+        else
+        {
+            RuntimeServices.GameModeService.AIPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+        }
         
         // after a fixed wait time, update next shoot position if the shot was successful (perfect or accurate)
         StartCoroutine(CallNextShootPosition(result.Accuracy == ShootAccuracy.Perfect || result.Accuracy == ShootAccuracy.Accurate, result.IsHumanPlayer));
@@ -281,8 +300,8 @@ public class GameModeManager : MonoBehaviour
 
     private void SetGameModeOutcome()
     {
-        bool humanPlayerWin = RuntimeServices.GameModeService.PlayerScore > RuntimeServices.GameModeService.AIScore;
-        bool draw = RuntimeServices.GameModeService.PlayerScore == RuntimeServices.GameModeService.AIScore;
+        bool humanPlayerWin = RuntimeServices.GameModeService.HumanPlayerState.Score > RuntimeServices.GameModeService.AIPlayerState.Score;
+        bool draw = RuntimeServices.GameModeService.HumanPlayerState.Score == RuntimeServices.GameModeService.AIPlayerState.Score;
 
         RuntimeServices.GameModeService.GameModeOutcome = draw ? GameModeOutcome.Draw : (humanPlayerWin ? GameModeOutcome.Win : GameModeOutcome.Lose);
     }

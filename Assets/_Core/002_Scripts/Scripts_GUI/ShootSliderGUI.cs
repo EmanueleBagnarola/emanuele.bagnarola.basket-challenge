@@ -93,7 +93,7 @@ public class ShootSliderGUI : MonoBehaviour
             return;
         
         // Update the runtime shoot phase value
-        RuntimeServices.GameModeService.PlayerShootPhase = PlayerShootPhase.Started;
+        RuntimeServices.GameModeService.HumanPlayerState.ShootPhase = PlayerShootPhase.Started;
 
         _gestureActive = true;
         _currentInputTime = 0f;

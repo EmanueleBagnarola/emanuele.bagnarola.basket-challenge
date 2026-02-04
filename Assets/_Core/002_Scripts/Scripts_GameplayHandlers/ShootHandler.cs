@@ -214,7 +214,11 @@ public class ShootHandler : MonoBehaviour
         // Update the runtime shoot phase value
         if (context.IsHuman)
         {
-            RuntimeServices.GameModeService.PlayerShootPhase = PlayerShootPhase.Completed;
+            RuntimeServices.GameModeService.HumanPlayerState.ShootPhase = PlayerShootPhase.Completed;
+        }
+        else
+        {
+            RuntimeServices.GameModeService.AIPlayerState.ShootPhase = PlayerShootPhase.Completed;
         }
         
         GameModeEvents.TriggerShootCompleted(context.Result);

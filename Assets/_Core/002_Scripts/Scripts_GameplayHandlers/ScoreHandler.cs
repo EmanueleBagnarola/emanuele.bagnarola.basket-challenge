@@ -32,13 +32,13 @@ public class ScoreHandler : MonoBehaviour
         Debug.Log($"OnShootCompleted | shot score: {finalShootScore}");
 
         if (result.IsHumanPlayer)
-            RuntimeServices.GameModeService.PlayerScore += finalShootScore;
+            RuntimeServices.GameModeService.HumanPlayerState.Score += finalShootScore;
         else
-            RuntimeServices.GameModeService.AIScore += finalShootScore;
+            RuntimeServices.GameModeService.AIPlayerState.Score += finalShootScore;
         
         if(finalShootScore > 0)
             GameModeEvents.TriggerShootScore(result, finalShootScore);
         
-        GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? RuntimeServices.GameModeService.PlayerScore : RuntimeServices.GameModeService.AIScore, result.IsHumanPlayer);
+        GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? RuntimeServices.GameModeService.HumanPlayerState.Score : RuntimeServices.GameModeService.AIPlayerState.Score, result.IsHumanPlayer);
     }
 }

@@ -29,8 +29,8 @@ public class RewardsGUI : MonoBehaviour
 
     private void ShowScore()
     {
-        _humanLabelGUI.UpdateScore(RuntimeServices.GameModeService.PlayerScore);
-        _aiLabelGUI.UpdateScore(RuntimeServices.GameModeService.AIScore);
+        _humanLabelGUI.UpdateScore(RuntimeServices.GameModeService.HumanPlayerState.Score);
+        _aiLabelGUI.UpdateScore(RuntimeServices.GameModeService.AIPlayerState.Score);
     }
 
     private void ShowMoney()

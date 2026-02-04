@@ -10,31 +10,34 @@ public static class RuntimeServices
         public static GameModeSettings GameModeSettings;
         public static GameModeState GameModeState;
         public static GameModePhase GameModePhase;
-        public static PlayerShootPhase PlayerShootPhase;
         public static GameModeOutcome GameModeOutcome;
         public static int BackboardBonus;
         public static float Timer;
-        public static int PlayerScore;
-        public static int AIScore;
+        public static PlayerState HumanPlayerState = new PlayerState();
+        public static PlayerState AIPlayerState = new PlayerState();
 
         public static void Reset()
         {
-            PlayerShootPhase = PlayerShootPhase.WaitForShot; 
+            HumanPlayerState.Score = 0;
+            HumanPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+            
+            AIPlayerState.Score = 0;
+            AIPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+            
             BackboardBonus = 0;
-            PlayerScore = 0;
-            AIScore = 0;
         }
+    }
+
+    public class PlayerState
+    {
+        public int Score;
+        public PlayerShootPhase ShootPhase;
     }
 
     public static class TargetService
     {
         public static Vector3 ScoreTargetPos;
-        // public static Transform BackboardTarget;
-        // public static Transform FrameTarget;
-        // public static Transform FrameFailTarget;
-        // public static Transform BackboardFailGroundTarget;
-        // public static Transform DirectFailGroundTarget;
-
+        
         public static TargetState PlayerTargetState;
         public static TargetState AITargetState;
     }

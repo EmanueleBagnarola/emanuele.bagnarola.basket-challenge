@@ -42,8 +42,8 @@ public class FinalScoreGUI : MonoBehaviour
                 break;
             
             case GameModeState.End:
-                _playerScoreText.text = RuntimeServices.GameModeService.PlayerScore.ToString();
-                _aiScoreText.text = RuntimeServices.GameModeService.AIScore.ToString();
+                _playerScoreText.text = RuntimeServices.GameModeService.HumanPlayerState.Score.ToString();
+                _aiScoreText.text = RuntimeServices.GameModeService.AIPlayerState.Score.ToString();
                 Show(true);
                 break;
         }
