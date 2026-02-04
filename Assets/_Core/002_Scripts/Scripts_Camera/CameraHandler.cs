@@ -78,7 +78,7 @@ public class CameraHandler : MonoBehaviour
         if(!isHumanPlayer)
             return;
         
-        HandleShootCamera();
+        Invoke(nameof(HandleShootCamera), RuntimeServices.GameModeService.GameModeSettings.ShootSettings.ShootWaitTime);
     }
 
     private void OnShootPositionUpdated(bool _isHumanPlayer)

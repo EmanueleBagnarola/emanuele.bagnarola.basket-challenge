@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 396fdef02bdb12443b050193bf5840f9, type: 3}
   m_Name: ShootSettings
   m_EditorClassIdentifier: 
+  <ShootWaitTime>k__BackingField: 0.35
+  <NextShootWaitTime>k__BackingField: 0.3
   <ShootForce>k__BackingField: 0.8
   <ShootDuration>k__BackingField: 1
   <BounceForce>k__BackingField: 0.15

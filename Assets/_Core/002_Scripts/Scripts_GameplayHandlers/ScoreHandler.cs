@@ -46,7 +46,7 @@ public class ScoreHandler : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"OnShootCompleted | shot score: {finalShootScore}");
+        // Debug.Log($"OnShootCompleted | shot score: {finalShootScore}");
 
         if (result.IsHumanPlayer)
             RuntimeServices.GameModeService.HumanPlayerState.Score += finalShootScore;

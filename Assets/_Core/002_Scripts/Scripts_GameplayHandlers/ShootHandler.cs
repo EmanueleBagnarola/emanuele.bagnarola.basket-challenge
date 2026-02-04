@@ -53,7 +53,7 @@ public class ShootHandler : MonoBehaviour
             Shooter = shooterData,
         };
         
-        StartShoot(context);
+        StartCoroutine(StartShoot(context));
     }
 
     /// <summary>
@@ -136,20 +136,25 @@ public class ShootHandler : MonoBehaviour
     /// Starts the shoot curve path
     /// </summary>
     /// <param name="shootContext"></param>
-    private void StartShoot(ShootContext shootContext)
+    private IEnumerator StartShoot(ShootContext shootContext)
     {
+        yield return new WaitForSeconds(_shootSettings.ShootWaitTime);
+        
         if (shootContext.Path.Steps == null || shootContext.Path.Steps.Count == 0)
-            return;
+            yield break;
 
         // Call the event passing the target of the first step of the curve path
         GameModeEvents.TriggerFirstShootTargetSet(shootContext.Path.Steps[0].Target, shootContext.Shooter.IsHumanPlayer);
 
+        // remove ball from start position parent
+        shootContext.Shooter.Ball.transform.SetParent(null);
+        
         // Execute the first curve step
         ExecuteStep(shootContext, 0);
 
         // Get the current total time to consider the shot completed, based on path time given by the current shot result
         float shotValidateTime = _shootSettings.GetShotValidateTime(shootContext.Result);
-        Debug.Log($"shotValidateTime: {shotValidateTime}");
+        // Debug.Log($"shotValidateTime: {shotValidateTime}");
         
         StartCoroutine(CallShotCompleted(shootContext, shotValidateTime));
     }
@@ -368,7 +373,7 @@ public class ShootHandler : MonoBehaviour
 
     private void OnShootPositionUpdated(bool isHumanPlayer)
     {
-        StartCoroutine(ResetBall(isHumanPlayer, 0.01f));
+        StartCoroutine(ResetBall(isHumanPlayer, 0.1f));
     }
 
     private IEnumerator ResetBall(bool isHumanPlayer, float waitTime)
@@ -379,13 +384,15 @@ public class ShootHandler : MonoBehaviour
         {
             _playerShooterData.Ball.velocity = Vector3.zero;
             _playerShooterData.Ball.isKinematic = true;
-            _playerShooterData.Ball.transform.position = _playerShooterData.BallStartPosition.position;
+            _playerShooterData.Ball.transform.SetParent(_playerShooterData.BallStartPosition);
+            _playerShooterData.Ball.transform.localPosition = Vector3.zero;
         }
         else
         {
             _aiShooterData.Ball.velocity = Vector3.zero;
             _aiShooterData.Ball.isKinematic = true;
-            _aiShooterData.Ball.transform.position = _aiShooterData.BallStartPosition.position;
+            _aiShooterData.Ball.transform.SetParent(_aiShooterData.BallStartPosition);
+            _aiShooterData.Ball.transform.localPosition = Vector3.zero;
         }
     }
 }

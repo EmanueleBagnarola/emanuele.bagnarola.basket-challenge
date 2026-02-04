@@ -10,20 +10,20 @@ using Random = Unity.Mathematics.Random;
 public class GameModeSettings : ScriptableObject
 {
     [field: Header("Timers config")]
-    [field: SerializeField] public int StartGameCountdown { get; set; } = 3;
+    [field: SerializeField] public int StartGameCountdown { get; private set; } = 3;
 
     // How much time a gameplay session lasts in seconds
-    [field: SerializeField] public int GameModeDuration { get; set; } = 60;
+    [field: SerializeField] public int GameModeDuration { get; private set; } = 60;
    
     // Max time to check to keep the touch input for shooting attempt valid
     
     [field: Header("Input settings")]
-    [field: SerializeField] public float ShootInputMaxTime { get; set; } = 2;
-    [field: SerializeField] public float InputSensitivity { get; set; } = 1;
+    [field: SerializeField] public float ShootInputMaxTime { get; private set; } = 2;
+    [field: SerializeField] public float InputSensitivity { get; private set; } = 1;
      
     // Time to wait from shooting result (score / fail) to next shooting position
     [field: Header("Gameplay config")]
-    [field: SerializeField] public float NextShootWaitTime { get; private set; } = 0.7f;
+    [field: SerializeField] public ShootSettings ShootSettings { get; private set; }
 
     // Probability that the backboard bonus can appear after each shot
     [field: Header("Bonus Score config")]

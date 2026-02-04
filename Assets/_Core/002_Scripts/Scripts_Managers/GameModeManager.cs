@@ -260,7 +260,7 @@ public class GameModeManager : MonoBehaviour
     
     private IEnumerator CallNextShootPosition(bool changePosition, bool isHumanPlayer)
     {
-        yield return new WaitForSeconds(_gameModeSettings.NextShootWaitTime);
+        yield return new WaitForSeconds(_gameModeSettings.ShootSettings.NextShootWaitTime);
         
         // Update new shoot position
         UpdateShootPosition(changePosition, isHumanPlayer);

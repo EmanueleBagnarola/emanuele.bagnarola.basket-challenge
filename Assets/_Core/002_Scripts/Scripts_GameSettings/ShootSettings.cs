@@ -6,6 +6,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ShootSettings", menuName = "ScriptableObjects/ShootSettings")]
 public class ShootSettings : ScriptableObject
 {
+    [field:Header("General")]
+    // The time to wait after the input attempt is called (used for player jump animation)
+    [field: SerializeField] public float ShootWaitTime { get; private set; } = 0.5f;
+    // The time to wait to reset the player on next shot position
+    [field: SerializeField] public float NextShootWaitTime { get; private set; } = 0.7f;
+    
     [field:Header("Base - Shoot")]
     // The height/duration of the tween curve when shot is started (from hand)
     [field:SerializeField] public float ShootForce { get; private set; } =  1.1f;
