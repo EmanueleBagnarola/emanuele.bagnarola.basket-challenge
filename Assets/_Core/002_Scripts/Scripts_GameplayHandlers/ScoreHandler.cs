@@ -53,8 +53,7 @@ public class ScoreHandler : MonoBehaviour
         else
             RuntimeServices.GameModeService.AIPlayerState.Score += finalShootScore;
         
-        if(finalShootScore > 0)
-            GameModeEvents.TriggerShootScore(result, finalShootScore);
+        GameModeEvents.TriggerShootScore(result, finalShootScore);
         
         GameModeEvents.TriggerGlobalScoreUpdated(result.IsHumanPlayer ? RuntimeServices.GameModeService.HumanPlayerState.Score : RuntimeServices.GameModeService.AIPlayerState.Score, result.IsHumanPlayer);
     }

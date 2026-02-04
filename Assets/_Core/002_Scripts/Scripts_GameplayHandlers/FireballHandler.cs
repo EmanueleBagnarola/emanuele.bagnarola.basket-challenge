@@ -22,8 +22,20 @@ public class FireballHandler : MonoBehaviour
 
     private void OnShootScore(ShootResult result, int score)
     {
+        Debug.Log($"FireballHandler | OnShootScore | result {result.Accuracy}");
+        
         if (result.IsHumanPlayer)
         {
+            if (score <= 0)
+            {
+                // Disable fireball
+                RuntimeServices.GameModeService.HumanPlayerState.FireballScore = 0;
+                RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled = false;
+                GameModeEvents.TriggerSetFireballScoreActive(false, true);
+                GameModeEvents.TriggerUpdateFireballScore(0, true);
+                return;
+            }
+            
             // Register new fireball score
             float newPlayerFireballScore = RuntimeServices.GameModeService.HumanPlayerState.FireballScore + RuntimeServices.GameModeService.GameModeSettings.FireballPointValue;
             
@@ -50,6 +62,16 @@ public class FireballHandler : MonoBehaviour
         }
         else
         {
+            if (score <= 0)
+            {
+                // Disable fireball
+                RuntimeServices.GameModeService.AIPlayerState.FireballScore = 0;
+                RuntimeServices.GameModeService.AIPlayerState.FireballEnabled = false;
+                GameModeEvents.TriggerSetFireballScoreActive(false, false);
+                GameModeEvents.TriggerUpdateFireballScore(0, false);
+                return;
+            }
+            
             // Register new fireball score
             float newAIFireballScore = RuntimeServices.GameModeService.AIPlayerState.FireballScore + RuntimeServices.GameModeService.GameModeSettings.FireballPointValue;
             
@@ -78,7 +100,7 @@ public class FireballHandler : MonoBehaviour
         if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore > 0)
         {
             RuntimeServices.GameModeService.HumanPlayerState.FireballScore -= Time.deltaTime * RuntimeServices.GameModeService.GameModeSettings.FireballPointEmptySpeed;
-            GameModeEvents.TriggerUpdateFireballScore( RuntimeServices.GameModeService.HumanPlayerState.FireballScore, true);
+            GameModeEvents.TriggerUpdateFireballScore(RuntimeServices.GameModeService.HumanPlayerState.FireballScore, true);
 
             if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore <= 0)
             {

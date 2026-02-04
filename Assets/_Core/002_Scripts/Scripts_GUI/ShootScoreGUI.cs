@@ -37,6 +37,9 @@ public class ShootScoreGUI : MonoBehaviour
 
     private void OnShootScore(ShootResult result, int score)
     {
+        if (score <= 0)
+            return;
+        
         StartCoroutine(ShowScoreText(string.Format(_scoreTextFormat, score), result.IsHumanPlayer));
     }
 

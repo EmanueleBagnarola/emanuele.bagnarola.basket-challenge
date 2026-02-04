@@ -229,6 +229,9 @@ public class GameModeManager : MonoBehaviour
 
     private void OnShootScore(ShootResult result, int score)
     {
+        if (score <= 0)
+            return;
+        
         // check if a backboard bonus score can be generated
         if (!_backboardBonusIsOn)
         {
