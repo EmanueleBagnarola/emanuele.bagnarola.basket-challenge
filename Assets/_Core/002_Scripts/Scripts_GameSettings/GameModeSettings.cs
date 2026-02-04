@@ -16,7 +16,10 @@ public class GameModeSettings : ScriptableObject
     [field: SerializeField] public int GameModeDuration { get; set; } = 60;
    
     // Max time to check to keep the touch input for shooting attempt valid
+    
+    [field: Header("Input settings")]
     [field: SerializeField] public float ShootInputMaxTime { get; set; } = 2;
+    [field: SerializeField] public float InputSensitivity { get; set; } = 1;
      
     // Time to wait from shooting result (score / fail) to next shooting position
     [field: Header("Gameplay config")]
@@ -33,10 +36,15 @@ public class GameModeSettings : ScriptableObject
     [Header("Basic Score config")]
     [SerializeField, NonReorderable] private List<BasicScoreConfig> basicScoreConfigs = new List<BasicScoreConfig>();
 
+    [field: Header("Fireball config")]
+    [field: SerializeField] public int FireballPointValue { get; private set; } = 1;
+    [field: SerializeField] public int FireballMaxScore { get; private set; } = 10;
+    [field: SerializeField] public float FireballPointEmptySpeed { get; private set; } = 0.1f;
+    [field: SerializeField] public int FireballScoreMultiplier { get; private set; } = 2;
+
     [field: Header("Rewards config")]
     [field: SerializeField] public float ShowRewardsPageWaitTime { get; private set; } = 2;
     [field: SerializeField, NonReorderable] private List<MoneyRewardConfig> moneyRewardConfigs = new List<MoneyRewardConfig>();
-    
     
     [field: Header("Debug")]
     [field: SerializeField] public bool Debug_UseMaxInputTime { get; private set; } = true;

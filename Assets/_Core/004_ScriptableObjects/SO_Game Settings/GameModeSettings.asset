@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <StartGameCountdown>k__BackingField: 3
   <GameModeDuration>k__BackingField: 60
-  <ShootInputMaxTime>k__BackingField: 1
+  <ShootInputMaxTime>k__BackingField: 0.8
+  <InputSensitivity>k__BackingField: 0.8
   <NextShootWaitTime>k__BackingField: 0.7
   <BackboardBonusProbability>k__BackingField: 30
   BackboardBonusScoreConfigs:
@@ -62,6 +63,10 @@ MonoBehaviour:
   - Score: 2
     Accuracy: 1
     Type: 1
+  <FireballPointValue>k__BackingField: 1
+  <FireballMaxScore>k__BackingField: 4
+  <FireballPointEmptySpeed>k__BackingField: 0.2
+  <FireballScoreMultiplier>k__BackingField: 2
   <ShowRewardsPageWaitTime>k__BackingField: 3
   moneyRewardConfigs:
   - Outcome: 0

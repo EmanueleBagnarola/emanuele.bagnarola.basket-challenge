@@ -29,6 +29,23 @@ public class ScoreHandler : MonoBehaviour
         if (result.Accuracy == ShootAccuracy.Perfect && result.Type == ShootType.Backboard && RuntimeServices.GameModeService.BackboardBonus > 0)
             finalShootScore = RuntimeServices.GameModeService.BackboardBonus;
 
+        switch (result.IsHumanPlayer)
+        {
+            case true:
+                if (RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled)
+                {
+                    finalShootScore *= RuntimeServices.GameModeService.GameModeSettings.FireballScoreMultiplier;
+                }
+                break;
+            
+            case false:
+                if (RuntimeServices.GameModeService.AIPlayerState.FireballEnabled)
+                {
+                    finalShootScore *= RuntimeServices.GameModeService.GameModeSettings.FireballScoreMultiplier;
+                }
+                break;
+        }
+
         Debug.Log($"OnShootCompleted | shot score: {finalShootScore}");
 
         if (result.IsHumanPlayer)

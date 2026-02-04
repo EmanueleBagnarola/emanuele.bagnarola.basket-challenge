@@ -18,11 +18,8 @@ public static class RuntimeServices
 
         public static void Reset()
         {
-            HumanPlayerState.Score = 0;
-            HumanPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
-            
-            AIPlayerState.Score = 0;
-            AIPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+            HumanPlayerState = new PlayerState();
+            AIPlayerState = new PlayerState();
             
             BackboardBonus = 0;
         }
@@ -31,6 +28,8 @@ public static class RuntimeServices
     public class PlayerState
     {
         public int Score;
+        public float FireballScore;
+        public bool FireballEnabled;
         public PlayerShootPhase ShootPhase;
     }
 

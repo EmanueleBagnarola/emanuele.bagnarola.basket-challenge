@@ -50,6 +50,13 @@ public static class GameModeEvents
     public delegate void OnShowRewardsHandler();
     public static event OnShowRewardsHandler OnShowRewards;
 
+    
+    public delegate void OnUpdateFireballScoreHandler(float fireballScore, bool isHumanPlayer);
+    public static event OnUpdateFireballScoreHandler OnUpdateFireballScore;
+    
+    public delegate void OnSetFireballScoreEnabledHandler(bool enabled, bool isHumanPlayer);
+    public static event OnSetFireballScoreEnabledHandler OnSetFireballScoreActive;
+
     // --- Event Triggers ---
 
     /// <summary>
@@ -150,5 +157,20 @@ public static class GameModeEvents
     public static void TriggerShowRewards()
     {
         OnShowRewards?.Invoke();
+    }
+
+    public static void TriggerUpdateFireballScore(float fireballScore, bool isHumanPlayer)
+    {
+        OnUpdateFireballScore?.Invoke(fireballScore,  isHumanPlayer);    
+    }
+    
+    /// <summary>
+    /// Called when the fireball bar is filled and enable the multiplied score and the fire fx on ball
+    /// </summary>
+    /// <param name="active"></param>
+    /// <param name="isHumanPlayer"></param>
+    public static void TriggerSetFireballScoreActive(bool active, bool isHumanPlayer)
+    {
+        OnSetFireballScoreActive?.Invoke(active, isHumanPlayer);
     }
 }

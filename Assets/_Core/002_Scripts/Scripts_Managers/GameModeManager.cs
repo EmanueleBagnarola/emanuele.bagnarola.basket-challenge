@@ -289,6 +289,7 @@ public class GameModeManager : MonoBehaviour
         _backboardBonusIsOn = true;
         RuntimeServices.GameModeService.BackboardBonus = bonusScore;
         GameModeEvents.TriggerBackboardBonus(true, bonusScore);
+        UIEvents.TriggerShowNotification(NotificationType.BackboardBonus);
     }
 
     private void DisableBackboardBonus()

@@ -9,10 +9,7 @@ public class ShootSliderGUI : MonoBehaviour
     [SerializeField] private Slider _slider;
     [SerializeField] private RectTransform _directScoreLabel;
     [SerializeField] private RectTransform _blackboardScoreLabel;
-
-    [Header("Input")]
-    [SerializeField] private float _sensitivity = 2f;
-
+    
     private float _sliderLength;
 
     // Input state
@@ -143,7 +140,7 @@ public class ShootSliderGUI : MonoBehaviour
         float deltaY = Mathf.Max(0f, _inputCurrentPos.y - _inputStartPos.y);
         float normalized = Mathf.Clamp01(deltaY / Screen.height);
 
-        float value = normalized * GameModeEnv.MAX_SHOOT_VELOCITY * _sensitivity;
+        float value = normalized * GameModeEnv.MAX_SHOOT_VELOCITY * RuntimeServices.GameModeService.GameModeSettings.InputSensitivity;
 
         // Detect input only going up
         _slider.value = Mathf.Max(_slider.value, value);
