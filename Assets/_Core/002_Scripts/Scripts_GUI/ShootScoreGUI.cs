@@ -8,7 +8,8 @@ using UnityEngine;
 public class ShootScoreGUI : MonoBehaviour
 {
     [Header("Config")]
-    [SerializeField] private TMP_Text _shootScoreText;
+    [SerializeField] private TMP_Text _playerShootScoreText;
+    [SerializeField] private TMP_Text _aiShootScoreText;
     [SerializeField] private string _scoreTextFormat = "{0} pts!";
     [SerializeField] private float _messageDuration;
 
@@ -25,7 +26,8 @@ public class ShootScoreGUI : MonoBehaviour
 
     private void Start()
     {
-        SetText("");
+        SetText("", true);
+        SetText("", false);
     }
 
     private void OnDestroy()
@@ -35,27 +37,36 @@ public class ShootScoreGUI : MonoBehaviour
 
     private void OnShootScore(ShootResult result, int score)
     {
-        StartCoroutine(ShowScoreText(string.Format(_scoreTextFormat, score)));
+        StartCoroutine(ShowScoreText(string.Format(_scoreTextFormat, score), result.IsHumanPlayer));
     }
 
-    private IEnumerator ShowScoreText(string scoreText)
+    private IEnumerator ShowScoreText(string scoreText, bool isHumanPlayer)
     {
-        SetText(scoreText);
-        Punch();
+        SetText(scoreText, isHumanPlayer);
      
         yield return new WaitForSeconds(_messageDuration);
 
-        SetText("");
+        SetText("", isHumanPlayer);
     }
 
-    private void SetText(string text)
+    private void SetText(string text, bool isHumanPlayer)
     {
-        _shootScoreText.text = text;
+        if (isHumanPlayer)
+        {
+            _playerShootScoreText.text = text;
+            Punch(_playerShootScoreText.transform);
+        }
+        else
+        {
+            _aiShootScoreText.text = text;
+            Punch(_aiShootScoreText.transform);
+        }
+        
     }
 
     [Button]
-    public void Punch()
+    public void Punch(Transform textComponentTransform)
     {
-        _shootScoreText.transform.DOPunchScale(_shootScoreText.transform.localScale * _punchAnimationDuration, _punchAnimationDuration, _punchAnimationVibrato, _punchAnimationElasticity);
+        textComponentTransform.transform.DOPunchScale(textComponentTransform.transform.localScale * _punchAnimationDuration, _punchAnimationDuration, _punchAnimationVibrato, _punchAnimationElasticity);
     }
 }
