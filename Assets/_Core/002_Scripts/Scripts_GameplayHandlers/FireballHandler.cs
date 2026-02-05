@@ -26,6 +26,10 @@ public class FireballHandler : MonoBehaviour
         
         if (result.IsHumanPlayer)
         {
+            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
+            if(RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled)
+                return;
+            
             if (score <= 0)
             {
                 // Disable fireball
@@ -66,6 +70,10 @@ public class FireballHandler : MonoBehaviour
         }
         else
         {
+            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
+            if(RuntimeServices.GameModeService.AIPlayerState.FireballEnabled)
+                return;
+            
             if (score <= 0)
             {
                 // Disable fireball
@@ -101,9 +109,14 @@ public class FireballHandler : MonoBehaviour
 
     private void EmptyFireballScores()
     {
+        float slowEmptyMultiplier = RuntimeServices.GameModeService.GameModeSettings.FireballPointEmptySpeed;
+        float fullDurationMultiplier = RuntimeServices.GameModeService.GameModeSettings.FireballMaxScore / RuntimeServices.GameModeService.GameModeSettings.FireballDuration;
+        
         if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore > 0)
         {
-            RuntimeServices.GameModeService.HumanPlayerState.FireballScore -= Time.deltaTime * RuntimeServices.GameModeService.GameModeSettings.FireballPointEmptySpeed;
+            float emptyMultiplier = RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled ? fullDurationMultiplier : slowEmptyMultiplier;
+            
+            RuntimeServices.GameModeService.HumanPlayerState.FireballScore -= Time.deltaTime * emptyMultiplier;
             GameModeEvents.TriggerUpdateFireballScore(RuntimeServices.GameModeService.HumanPlayerState.FireballScore, true);
 
             if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore <= 0)
@@ -118,7 +131,9 @@ public class FireballHandler : MonoBehaviour
         
         if (RuntimeServices.GameModeService.AIPlayerState.FireballScore > 0)
         {
-            RuntimeServices.GameModeService.AIPlayerState.FireballScore -= Time.deltaTime * RuntimeServices.GameModeService.GameModeSettings.FireballPointEmptySpeed;
+            float emptyMultiplier = RuntimeServices.GameModeService.AIPlayerState.FireballEnabled ? fullDurationMultiplier : slowEmptyMultiplier;
+
+            RuntimeServices.GameModeService.AIPlayerState.FireballScore -= Time.deltaTime * emptyMultiplier;
             GameModeEvents.TriggerUpdateFireballScore( RuntimeServices.GameModeService.AIPlayerState.FireballScore, false);
             
             if (RuntimeServices.GameModeService.AIPlayerState.FireballScore <= 0)

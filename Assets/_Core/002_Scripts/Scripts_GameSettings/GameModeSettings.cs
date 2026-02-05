@@ -35,7 +35,8 @@ public class GameModeSettings : ScriptableObject
     [field: SerializeField] public int FireballMaxScore { get; private set; } = 10;
     [field: SerializeField] public float FireballPointEmptySpeed { get; private set; } = 0.1f;
     [field: SerializeField] public int FireballScoreMultiplier { get; private set; } = 2;
-
+    [field: SerializeField] public float FireballDuration { get; private set; } = 5f;
+    
     [field: Header("Rewards config")]
     [field: SerializeField] public float ShowRewardsPageWaitTime { get; private set; } = 2;
     [field: SerializeField, NonReorderable] private List<MoneyRewardConfig> moneyRewardConfigs = new List<MoneyRewardConfig>();
