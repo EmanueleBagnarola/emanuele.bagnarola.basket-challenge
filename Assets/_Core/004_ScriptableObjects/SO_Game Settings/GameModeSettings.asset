@@ -19,9 +19,9 @@ MonoBehaviour:
   <BackboardBonusProbability>k__BackingField: 30
   BackboardBonusScoreConfigs:
   - Score: 4
-    RandomWeight: 30
-  - Score: 6
     RandomWeight: 50
+  - Score: 6
+    RandomWeight: 30
   - Score: 8
     RandomWeight: 20
   shootConfigs:
