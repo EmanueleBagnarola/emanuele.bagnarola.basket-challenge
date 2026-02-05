@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <ShootWaitTime>k__BackingField: 0.35
   <NextShootWaitTime>k__BackingField: 0.3
+  <ShootInputMaxTime>k__BackingField: 0.4
+  <InputSensitivity>k__BackingField: 0.9
   <ShootForce>k__BackingField: 0.8
   <ShootDuration>k__BackingField: 1
   <BounceForce>k__BackingField: 0.15

@@ -12,6 +12,11 @@ public class ShootSettings : ScriptableObject
     // The time to wait to reset the player on next shot position
     [field: SerializeField] public float NextShootWaitTime { get; private set; } = 0.7f;
     
+    // Max time to check to keep the touch input for shooting attempt valid
+    [field: Header("Input settings")]
+    [field: SerializeField] public float ShootInputMaxTime { get; private set; } = 2;
+    [field: SerializeField] public float InputSensitivity { get; private set; } = 1;
+    
     [field:Header("Base - Shoot")]
     // The height/duration of the tween curve when shot is started (from hand)
     [field:SerializeField] public float ShootForce { get; private set; } =  1.1f;

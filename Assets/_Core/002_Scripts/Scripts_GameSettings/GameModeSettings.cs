@@ -14,13 +14,7 @@ public class GameModeSettings : ScriptableObject
 
     // How much time a gameplay session lasts in seconds
     [field: SerializeField] public int GameModeDuration { get; private set; } = 60;
-   
-    // Max time to check to keep the touch input for shooting attempt valid
     
-    [field: Header("Input settings")]
-    [field: SerializeField] public float ShootInputMaxTime { get; private set; } = 2;
-    [field: SerializeField] public float InputSensitivity { get; private set; } = 1;
-     
     // Time to wait from shooting result (score / fail) to next shooting position
     [field: Header("Gameplay config")]
     [field: SerializeField] public ShootSettings ShootSettings { get; private set; }

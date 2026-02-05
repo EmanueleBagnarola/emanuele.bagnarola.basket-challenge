@@ -25,8 +25,6 @@ public class ShootSliderGUI : MonoBehaviour
     // input touch/click current position
     private Vector2 _inputCurrentPos;
 
-    #region Unity
-
     private void Awake()
     {
         InitSlider();
@@ -53,8 +51,6 @@ public class ShootSliderGUI : MonoBehaviour
         GameModeEvents.OnGameModeStateUpdated -= OnGameModeStateUpdate;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
     }
-
-    #endregion
 
     #region Init
 
@@ -110,7 +106,7 @@ public class ShootSliderGUI : MonoBehaviour
 
         if (RuntimeServices.GameModeService.GameModeSettings.Debug_UseMaxInputTime)
         {
-            if (_currentInputTime > RuntimeServices.GameModeService.GameModeSettings.ShootInputMaxTime)
+            if (_currentInputTime > RuntimeServices.GameModeService.GameModeSettings.ShootSettings.ShootInputMaxTime)
             {
                 ShootAttempt();
                 return;
@@ -140,7 +136,7 @@ public class ShootSliderGUI : MonoBehaviour
         float deltaY = Mathf.Max(0f, _inputCurrentPos.y - _inputStartPos.y);
         float normalized = Mathf.Clamp01(deltaY / Screen.height);
 
-        float value = normalized * GameModeEnv.MAX_SHOOT_VELOCITY * RuntimeServices.GameModeService.GameModeSettings.InputSensitivity;
+        float value = normalized * GameModeEnv.MAX_SHOOT_VELOCITY * RuntimeServices.GameModeService.GameModeSettings.ShootSettings.InputSensitivity;
 
         // Detect input only going up
         _slider.value = Mathf.Max(_slider.value, value);

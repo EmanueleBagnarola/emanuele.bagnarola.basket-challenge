@@ -33,6 +33,7 @@ public class FireballHandler : MonoBehaviour
                 RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled = false;
                 GameModeEvents.TriggerSetFireballScoreActive(false, true);
                 GameModeEvents.TriggerUpdateFireballScore(0, true);
+                AudioEvents.TriggerStopAudioFX(AudioFXId.Fireball);
                 return;
             }
             
@@ -51,6 +52,9 @@ public class FireballHandler : MonoBehaviour
                 if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore >= RuntimeServices.GameModeService.GameModeSettings.FireballMaxScore)
                 {
                     RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled = true;
+                    
+                    // call audio event
+                    AudioEvents.TriggerPlayAudioFX(AudioFXId.Fireball);
                     
                     // Call fireball enabled
                     GameModeEvents.TriggerSetFireballScoreActive(true, true);
@@ -105,6 +109,9 @@ public class FireballHandler : MonoBehaviour
             if (RuntimeServices.GameModeService.HumanPlayerState.FireballScore <= 0)
             {
                 RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled = false;
+                
+                AudioEvents.TriggerStopAudioFX(AudioFXId.Fireball);
+                
                 GameModeEvents.TriggerSetFireballScoreActive(false, true);
             }
         }

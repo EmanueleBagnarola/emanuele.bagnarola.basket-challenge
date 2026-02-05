@@ -82,6 +82,7 @@ public class GameModeManager : MonoBehaviour
         {
             Debug.Log($"Countdown: {_currentStartCountdownTimer}");
             GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer);
+            AudioEvents.TriggerPlayAudioFX(AudioFXId.Countdown_Progress);
             
             yield return new WaitForSeconds(1f);
 
@@ -89,6 +90,7 @@ public class GameModeManager : MonoBehaviour
         }
         
         GameModeEvents.TriggerCountdownTick(_currentStartCountdownTimer);
+        AudioEvents.TriggerPlayAudioFX(AudioFXId.Countdown_End);
         UpdateGameModeState(GameModeState.Playing);
         Debug.Log("START");
     }
@@ -176,7 +178,7 @@ public class GameModeManager : MonoBehaviour
                 break;
             
             case GameModeState.End:
-                SetGameModeOutcome();
+                CheckGameModeOutcome();
                 StartCoroutine(CallRewardsPage());
                 break;
         }
@@ -300,12 +302,32 @@ public class GameModeManager : MonoBehaviour
         GameModeEvents.TriggerBackboardBonus(false, -1);
     }
 
-    private void SetGameModeOutcome()
+    private void CheckGameModeOutcome()
     {
         bool humanPlayerWin = RuntimeServices.GameModeService.HumanPlayerState.Score > RuntimeServices.GameModeService.AIPlayerState.Score;
         bool draw = RuntimeServices.GameModeService.HumanPlayerState.Score == RuntimeServices.GameModeService.AIPlayerState.Score;
 
-        RuntimeServices.GameModeService.GameModeOutcome = draw ? GameModeOutcome.Draw : (humanPlayerWin ? GameModeOutcome.Win : GameModeOutcome.Lose);
+        SetGameModeOutcome(draw ? GameModeOutcome.Draw : (humanPlayerWin ? GameModeOutcome.Win : GameModeOutcome.Lose));
+    }
+
+    private void SetGameModeOutcome(GameModeOutcome outcome)
+    {
+        RuntimeServices.GameModeService.GameModeOutcome = outcome;
+
+        switch (outcome)
+        {
+            case GameModeOutcome.Win:
+                AudioEvents.TriggerPlayAudioFX(AudioFXId.Win);
+                break;
+            
+            case GameModeOutcome.Lose:
+                AudioEvents.TriggerPlayAudioFX(AudioFXId.Lose);
+                break;
+            
+            case GameModeOutcome.Draw:
+                AudioEvents.TriggerPlayAudioFX(AudioFXId.Draw);
+                break;
+        }
     }
     
     private IEnumerator CallRewardsPage()

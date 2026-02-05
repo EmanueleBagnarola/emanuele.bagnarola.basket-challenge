@@ -1295,7 +1295,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bounceAxis: {x: -1, y: 0, z: 0}
   _bouncePower: 5
-  _bounceDuration: 0.3
+  _bounceDuration: 1
   _bounceVibrato: 10
   _bounceElasticity: 100
 --- !u!1 &7673135765785148210

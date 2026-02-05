@@ -53,6 +53,9 @@ public class ShootHandler : MonoBehaviour
             Shooter = shooterData,
         };
         
+        // Play audio
+        AudioEvents.TriggerPlayAudioFX(AudioFXId.Shoot);
+        
         StartCoroutine(StartShoot(context));
     }
 
@@ -151,7 +154,7 @@ public class ShootHandler : MonoBehaviour
         
         // Execute the first curve step
         ExecuteStep(shootContext, 0);
-
+        
         // Get the current total time to consider the shot completed, based on path time given by the current shot result
         float shotValidateTime = _shootSettings.GetShotValidateTime(shootContext.Result);
         // Debug.Log($"shotValidateTime: {shotValidateTime}");
@@ -183,7 +186,7 @@ public class ShootHandler : MonoBehaviour
         HandleShootStep(step, () =>
             {
                 ExecuteStep(context, index + 1);
-                step.OnStepStarted?.Invoke();
+                step.OnStepCompleted?.Invoke();
             },
             index == 0,
             context);
@@ -301,15 +304,36 @@ public class ShootHandler : MonoBehaviour
                 {
                     // directly to shoot scoring
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, RuntimeServices.TargetService.ScoreTargetPos);
+                        ShootPathStep shootToScore = new ShootPathStep(
+                            _shootSettings.ShootForce, 
+                            _shootSettings.ShootDuration, 
+                            RuntimeServices.TargetService.ScoreTargetPos,
+                            onStepCompleted: ()=> AudioEvents.TriggerPlayAudioFX(AudioFXId.Perfect));
+                        
                         path.Steps.Add(shootToScore);
                         break;
 
                     // shoot -> loop rim -> score
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(
+                            _shootSettings.ShootForce, 
+                            _shootSettings.ShootDuration, 
+                            frameTargetPos, 
+                            true, 
+                            onStepCompleted: ()=>
+                            {
+                                AnimationEvents.TriggerRimTouched();
+                                AudioEvents.TriggerPlayAudioFX(AudioFXId.BounceRim);
+                                
+                            });
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration,  RuntimeServices.TargetService.ScoreTargetPos);
+                        
+                        ShootPathStep rimToScore = new ShootPathStep(
+                            _shootSettings.RimToScoreForce,
+                            _shootSettings.RimToScoreDuration,  
+                            RuntimeServices.TargetService.ScoreTargetPos,
+                            onStepCompleted: ()=> AudioEvents.TriggerPlayAudioFX(AudioFXId.Accurate));
+                        
                         path.Steps.Add(rimToScore);
                         break;
 
@@ -325,29 +349,65 @@ public class ShootHandler : MonoBehaviour
             case ShootType.Backboard:
                 
                 // add always a first step with target the adaptive backboard position
-                ShootPathStep baseStepToBackboard = new ShootPathStep(_shootSettings.ShootForce, _shootSettings.ShootDuration, backboardTargetPos, lastBounce: accuracyType == ShootAccuracy.Perfect);
+                ShootPathStep baseStepToBackboard = new ShootPathStep(
+                    _shootSettings.ShootForce,
+                    _shootSettings.ShootDuration,
+                    backboardTargetPos, 
+                    lastBounce: accuracyType == ShootAccuracy.Perfect,
+                    onStepCompleted: ()=> AudioEvents.TriggerPlayAudioFX(AudioFXId.BounceBackboard));
+                
                 path.Steps.Add(baseStepToBackboard);
 
                 switch (accuracyType)
                 {
                     // from backboard to score target
                     case ShootAccuracy.Perfect:
-                        ShootPathStep shootToScore = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, RuntimeServices.TargetService.ScoreTargetPos);
+                        ShootPathStep shootToScore = new ShootPathStep(
+                            _shootSettings.BounceForce,
+                            _shootSettings.BounceDuration,
+                            RuntimeServices.TargetService.ScoreTargetPos,
+                            onStepCompleted: ()=> AudioEvents.TriggerPlayAudioFX(AudioFXId.Perfect));
+                        
                         path.Steps.Add(shootToScore);
                         break;
 
                     // backboard -> rim -> score target
                     case ShootAccuracy.Accurate:
-                        ShootPathStep shootToRim = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameTargetPos, true, onStepStarted:AnimationEvents.TriggerRimTouched);
+                        ShootPathStep shootToRim = new ShootPathStep(
+                            _shootSettings.BounceForce, 
+                            _shootSettings.BounceDuration, 
+                            frameTargetPos, true, 
+                            onStepCompleted: ()=>
+                            {
+                                AnimationEvents.TriggerRimTouched();
+                                AudioEvents.TriggerPlayAudioFX(AudioFXId.BounceRim);
+                            });
+                        
                         path.Steps.Add(shootToRim);
-                        ShootPathStep rimToScore = new ShootPathStep(_shootSettings.RimToScoreForce, _shootSettings.RimToScoreDuration, RuntimeServices.TargetService.ScoreTargetPos);
+                        
+                        ShootPathStep rimToScore = new ShootPathStep(
+                            _shootSettings.RimToScoreForce, 
+                            _shootSettings.RimToScoreDuration, 
+                            RuntimeServices.TargetService.ScoreTargetPos,
+                            onStepCompleted: ()=> AudioEvents.TriggerPlayAudioFX(AudioFXId.Accurate));
+                        
                         path.Steps.Add(rimToScore);
                         break;
 
                     // backboard -> rim (fail, outside) -> adaptive ground position
                     case ShootAccuracy.Fail:
-                        ShootPathStep shootToFrailFrame = new ShootPathStep(_shootSettings.BounceForce, _shootSettings.BounceDuration, frameFailTargetPos, onStepStarted: AnimationEvents.TriggerRimTouched);
-                        path.Steps.Add(shootToFrailFrame);
+                        ShootPathStep shootToFailRim = new ShootPathStep(
+                            _shootSettings.BounceForce, 
+                            _shootSettings.BounceDuration, 
+                            frameFailTargetPos, 
+                            onStepCompleted: ()=>
+                            {
+                                AnimationEvents.TriggerRimTouched();
+                                AudioEvents.TriggerPlayAudioFX(AudioFXId.BounceRim);
+                            });
+                        
+                        path.Steps.Add(shootToFailRim);
+                        
                         ShootPathStep backboardToGround = new ShootPathStep(_shootSettings.BounceToGroundForce, _shootSettings.BounceToGroundDuration, groundFailAreaTargetPos);
                         path.Steps.Add(backboardToGround);
                         break;
@@ -419,19 +479,19 @@ public class ShootPathStep
     // The final target of the curve step
     public Vector3 Target;
 
-    // If there's any event to call when steps starts (i.e. loop frame bounce animation when hit)
-    public Action OnStepStarted;
-
+    // If there's any event to call when steps  ends (i.e. loop frame bounce animation when hit)
+    public Action OnStepCompleted;
+    
     // Check if this was the last step the let the next shoot timer know when to start and to handle extra ball physics
     public bool LastBounce;
 
-    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, Action onStepStarted = null)
+    public ShootPathStep(float power, float duration, Vector3 target, bool lastBounce = false, Action onStepCompleted = null)
     {
         Power = power;
         Duration = duration;
         Target = target;
         LastBounce = lastBounce;
-        OnStepStarted = onStepStarted;
+        OnStepCompleted = onStepCompleted;
     }
 }
 
