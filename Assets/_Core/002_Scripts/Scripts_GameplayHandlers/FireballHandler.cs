@@ -26,10 +26,6 @@ public class FireballHandler : MonoBehaviour
         
         if (result.IsHumanPlayer)
         {
-            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
-            if(RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled)
-                return;
-            
             if (score <= 0)
             {
                 // Disable fireball
@@ -40,6 +36,11 @@ public class FireballHandler : MonoBehaviour
                 AudioEvents.TriggerStopAudioFX(AudioFXId.Fireball);
                 return;
             }
+            
+            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
+            if(RuntimeServices.GameModeService.HumanPlayerState.FireballEnabled)
+                return;
+
             
             // Register new fireball score
             float newPlayerFireballScore = RuntimeServices.GameModeService.HumanPlayerState.FireballScore + RuntimeServices.GameModeService.GameModeSettings.FireballPointValue;
@@ -70,9 +71,6 @@ public class FireballHandler : MonoBehaviour
         }
         else
         {
-            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
-            if(RuntimeServices.GameModeService.AIPlayerState.FireballEnabled)
-                return;
             
             if (score <= 0)
             {
@@ -83,6 +81,10 @@ public class FireballHandler : MonoBehaviour
                 GameModeEvents.TriggerUpdateFireballScore(0, false);
                 return;
             }
+            
+            // If fireball is already enabled, don't add up new score (wait for bar to empty after the set duration)
+            if(RuntimeServices.GameModeService.AIPlayerState.FireballEnabled)
+                return;
             
             // Register new fireball score
             float newAIFireballScore = RuntimeServices.GameModeService.AIPlayerState.FireballScore + RuntimeServices.GameModeService.GameModeSettings.FireballPointValue;
