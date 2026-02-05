@@ -9,6 +9,8 @@ public class ShootPositionHandler : MonoBehaviour
     [SerializeField] private Transform _AITransform;
     [SerializeField] private Transform _shootRangeCenter;
     [SerializeField, NonReorderable] private List<ShootRange> _shootRangesByPhase; //NonReorderable attribute added to fix the editor serialized class visualization but
+    [SerializeField] private float _minDistanceBetweenPlayers = 1.5f;
+    [SerializeField] private int _maxPositionAttempts = 10;
     
     private void Awake()
     {
@@ -24,16 +26,23 @@ public class ShootPositionHandler : MonoBehaviour
     {
         if (changePosition)
         {
-            Vector3 updatedShootPosition = GetRandomPointOnShootRange(GeShootPositionsPoolByPhase());
-            
+            ShootRange range = GeShootPositionsPoolByPhase();
+
             if (isHumanPlayer)
-                _playerTransform.position = updatedShootPosition;
+            {
+                Vector3 pos = GetValidShootPosition(range, _AITransform);
+                _playerTransform.position = pos;
+            }
             else
-                _AITransform.position = updatedShootPosition;
+            {
+                Vector3 pos = GetValidShootPosition(range, _playerTransform);
+                _AITransform.position = pos;
+            }
         }
-        
+
         GameModeEvents.TriggerShootPositionUpdated(isHumanPlayer);
     }
+
     
     private Vector3 GetRandomPointOnShootRange(ShootRange range)
     {
@@ -45,6 +54,23 @@ public class ShootPositionHandler : MonoBehaviour
             0,
             _shootRangeCenter.position.z + Mathf.Sin(rad) * range.RangeRadius
         );
+    }
+    
+    private Vector3 GetValidShootPosition(ShootRange range, Transform otherPlayer)
+    {
+        Vector3 candidate = Vector3.zero;
+
+        for (int i = 0; i < _maxPositionAttempts; i++)
+        {
+            candidate = GetRandomPointOnShootRange(range);
+
+            if (Vector3.Distance(candidate, otherPlayer.position) >= _minDistanceBetweenPlayers)
+                return candidate;
+        }
+
+        // fallback: return the last position found
+        Debug.LogWarning("No valid shoot position found, using fallback.");
+        return candidate;
     }
 
     private ShootRange GeShootPositionsPoolByPhase()

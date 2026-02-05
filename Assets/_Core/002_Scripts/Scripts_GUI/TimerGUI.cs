@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,8 +18,11 @@ public class TimerGUI : MonoBehaviour
     private void Awake()
     {
         GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdated;
-        
-        _fillImage.color = _timerVisualizationColors[0];
+    }
+
+    private void Start()
+    {
+        InitSlider();
     }
 
     private void OnDestroy()
@@ -59,7 +63,6 @@ public class TimerGUI : MonoBehaviour
         switch (gameModeState)
         {
             case GameModeState.Startup:
-                InitSlider();
                 ShowFill(false);
                 break;
             

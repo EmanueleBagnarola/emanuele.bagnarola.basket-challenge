@@ -14,10 +14,13 @@ public class RewardsGUI : MonoBehaviour
     [SerializeField] private GameObject _drawLabel;
     [SerializeField] private TMP_Text _moneyRewardText;
     [SerializeField] private Button _mainMenuButton;
+    [SerializeField] private Button _playAgainButton;
  
     private void OnEnable()
     {
         _mainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
+        _playAgainButton.onClick.AddListener(OnPlayAgainButtonClicked);
+        
         ShowContent();
     }
     private void ShowContent()
@@ -63,5 +66,10 @@ public class RewardsGUI : MonoBehaviour
     private void OnMainMenuButtonClicked()
     {
         GameManager_SceneManager.Instance.LoadMainMenuScene();
+    }
+
+    private void OnPlayAgainButtonClicked()
+    {
+        GameManager_SceneManager.Instance.LoadGameModeScene();
     }
 }
