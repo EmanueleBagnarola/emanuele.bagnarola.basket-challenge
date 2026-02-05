@@ -31,6 +31,7 @@ public static class RuntimeServices
         public int Score;
         public float FireballScore;
         public bool FireballEnabled;
+        public bool FinalShotExecuted = false;
         public PlayerShootPhase ShootPhase;
     }
 

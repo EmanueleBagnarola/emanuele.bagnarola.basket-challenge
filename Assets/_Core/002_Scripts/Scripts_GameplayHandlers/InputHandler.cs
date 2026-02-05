@@ -95,7 +95,7 @@ public class InputHandler : MonoBehaviour
                 EnableActions();
                 break;
             
-            case GameModeState.End:
+            case GameModeState.WaitForEnd:
                 DisableActions();
                 break;
         }

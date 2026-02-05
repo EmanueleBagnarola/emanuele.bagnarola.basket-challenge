@@ -65,16 +65,17 @@ public class ShootSliderGUI : MonoBehaviour
 
     private void OnGameModeStateUpdate(GameModeState gameModeState)
     {
-        switch (gameModeState)
-        {
-            case GameModeState.End:
-                _visualContainer.SetActive(false);
-                break;
-            
-            default:
-                _visualContainer.SetActive(true);
-                break;
-        }
+        _visualContainer.SetActive(gameModeState == GameModeState.Playing);
+        // switch (gameModeState)
+        // {
+        //     case GameModeState.WaitForEnd:
+        //         _visualContainer.SetActive(false);
+        //         break;
+        //     
+        //     default:
+        //         _visualContainer.SetActive(true);
+        //         break;
+        // }
     }
     #endregion
 

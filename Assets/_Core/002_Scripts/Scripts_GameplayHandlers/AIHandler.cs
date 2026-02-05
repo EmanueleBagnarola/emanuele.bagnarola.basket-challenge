@@ -50,6 +50,8 @@ public class AIHandler : MonoBehaviour
             StopCoroutine(_shootAttemptCoroutine);
             return;
         }
+
+        RuntimeServices.GameModeService.AIPlayerState.ShootPhase = PlayerShootPhase.Started;
         
         _shootAttemptCoroutine = StartCoroutine(ShootAttempt(_nextShotWaitTime));
     }

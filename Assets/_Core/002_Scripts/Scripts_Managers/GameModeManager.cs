@@ -109,7 +109,7 @@ public class GameModeManager : MonoBehaviour
     /// </summary>
     private void UpdateGameModeTimer()
     {
-        if(!_gameModeTimerStarted)
+        if(!_gameModeTimerStarted ||RuntimeServices.GameModeService.GameModeState == GameModeState.End)
             return;
         
         _currentGameModeTimer -= Time.deltaTime;
@@ -118,36 +118,15 @@ public class GameModeManager : MonoBehaviour
 
         if (_currentGameModeTimer <= 0)
         {
-            // If both player are not attempting a shot, call end game
-            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot
-               && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot)
-                UpdateGameModeState(GameModeState.End);
+            // Set the current phase temporarily in waiting state, waiting for players to end their shooting phases
+            UpdateGameModeState(GameModeState.WaitForEnd);
             
-            // If both players completed the shot, call end game
-            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed
-               && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed)
+            // If both players are not in shooting phase, then call the end game
+            if (RuntimeServices.GameModeService.AIPlayerState.ShootPhase != PlayerShootPhase.Started
+                && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase != PlayerShootPhase.Started)
+            {
                 UpdateGameModeState(GameModeState.End);
-            
-            // If at least one player has attempted a shot, set the state to WaitForEnd and handle the end game
-            // next time the current shot score is handled
-            if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started
-               || RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started)
-                UpdateGameModeState(GameModeState.WaitForEnd);
-            //
-            // switch (RuntimeServices.GameModeService.PlayerShootPhase)
-            // {
-            //     case PlayerShootPhase.WaitForShot: 
-            //         UpdateGameModeState(GameModeState.End);
-            //         break;
-            //     
-            //     case PlayerShootPhase.Completed:
-            //         UpdateGameModeState(GameModeState.End);
-            //         break;
-            //     
-            //     case PlayerShootPhase.Started:
-            //         UpdateGameModeState(GameModeState.WaitForEnd);
-            //         break;
-            // }
+            }
         }
     }
     
@@ -221,11 +200,18 @@ public class GameModeManager : MonoBehaviour
         // reset the player shoot phase
         if (result.IsHumanPlayer)
         {
-            RuntimeServices.GameModeService.HumanPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+            if (RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
+                RuntimeServices.GameModeService.HumanPlayerState.FinalShotExecuted = true;
+            else
+                RuntimeServices.GameModeService.HumanPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+
         }
         else
         {
-            RuntimeServices.GameModeService.AIPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
+            if (RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
+                RuntimeServices.GameModeService.HumanPlayerState.FinalShotExecuted = true;
+            else
+                RuntimeServices.GameModeService.AIPlayerState.ShootPhase = PlayerShootPhase.WaitForShot;
         }
         
         // after a fixed wait time, update next shoot position if the shot was successful (perfect or accurate)
@@ -254,14 +240,18 @@ public class GameModeManager : MonoBehaviour
 
     private void OnGlobalScoreUpdated(int score, bool isHumanPlayer)
     {
-        if(!isHumanPlayer)
-            return;
-        
-        // If a shot was being processed while the timer reached 0, end the game when the score is updated
-        if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
-        {
-            UpdateGameModeState(GameModeState.End);
-        }
+        // if(!isHumanPlayer)
+        //     return;
+        //
+        // if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd
+        //    && ((RuntimeServices.GameModeService.HumanPlayerState.FinalShotExecuted
+        //         && RuntimeServices.GameModeService.AIPlayerState.FinalShotExecuted) 
+        //        || 
+        //        RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot 
+        //        && RuntimeServices.GameModeService.AIPlayerState.ShootPhase == PlayerShootPhase.WaitForShot))
+        // {
+        //     UpdateGameModeState(GameModeState.End);
+        // }
     }
     
     private IEnumerator CallNextShootPosition(bool changePosition, bool isHumanPlayer)
