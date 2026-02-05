@@ -66,6 +66,7 @@ MonoBehaviour:
   <FireballMaxScore>k__BackingField: 4
   <FireballPointEmptySpeed>k__BackingField: 0.2
   <FireballScoreMultiplier>k__BackingField: 2
+  <FireballDuration>k__BackingField: 10
   <ShowRewardsPageWaitTime>k__BackingField: 3
   moneyRewardConfigs:
   - Outcome: 0
