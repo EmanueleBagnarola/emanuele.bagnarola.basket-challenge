@@ -2792,6 +2792,32 @@ MonoBehaviour:
   _minShotVelocity: 30
   _maxShotVelocity: 80
   _nextShotWaitTime: 1
+  _difficultyConfigs:
+  - _difficulty: 0
+    _shootsConfig:
+    - ShootAccuracy: 0
+      Weight: 10
+    - ShootAccuracy: 1
+      Weight: 40
+    - ShootAccuracy: 2
+      Weight: 50
+  - _difficulty: 1
+    _shootsConfig:
+    - ShootAccuracy: 0
+      Weight: 30
+    - ShootAccuracy: 1
+      Weight: 40
+    - ShootAccuracy: 2
+      Weight: 30
+  - _difficulty: 2
+    _shootsConfig:
+    - ShootAccuracy: 0
+      Weight: 40
+    - ShootAccuracy: 1
+      Weight: 50
+    - ShootAccuracy: 2
+      Weight: 10
+  _difficulty: 2
 --- !u!1 &806168378
 GameObject:
   m_ObjectHideFlags: 0

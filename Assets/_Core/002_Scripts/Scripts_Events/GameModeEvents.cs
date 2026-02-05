@@ -57,6 +57,10 @@ public static class GameModeEvents
     public delegate void OnSetFireballScoreEnabledHandler(bool enabled, bool isHumanPlayer);
     public static event OnSetFireballScoreEnabledHandler OnSetFireballScoreActive;
 
+
+    public delegate void OnAIShotHandler(ShootResult result);
+    public static event OnAIShotHandler OnAIShot;
+    
     // --- Event Triggers ---
 
     /// <summary>
@@ -172,5 +176,10 @@ public static class GameModeEvents
     public static void TriggerSetFireballScoreActive(bool active, bool isHumanPlayer)
     {
         OnSetFireballScoreActive?.Invoke(active, isHumanPlayer);
+    }
+
+    public static void TriggerAIShot(ShootResult shootResult)
+    {
+        OnAIShot?.Invoke(shootResult);
     }
 }

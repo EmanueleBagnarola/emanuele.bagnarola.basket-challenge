@@ -11,6 +11,7 @@ public static class RuntimeServices
         public static GameModeState GameModeState;
         public static GameModePhase GameModePhase;
         public static GameModeOutcome GameModeOutcome;
+        public static AIDifficulty AIDifficulty;
         public static int BackboardBonus;
         public static float Timer;
         public static PlayerState HumanPlayerState = new PlayerState();

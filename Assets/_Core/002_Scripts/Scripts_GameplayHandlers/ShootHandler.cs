@@ -19,6 +19,7 @@ public class ShootHandler : MonoBehaviour
     {
         GameModeEvents.OnShootAttempt += OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated += OnShootPositionUpdated;
+        GameModeEvents.OnAIShot += OnAIShot;
     }
 
     private void Start()
@@ -31,6 +32,7 @@ public class ShootHandler : MonoBehaviour
     {
         GameModeEvents.OnShootAttempt -= OnShootAttempt;
         GameModeEvents.OnShootPositionUpdated -= OnShootPositionUpdated;
+        GameModeEvents.OnAIShot -= OnAIShot;
     }
 
     /// <summary>
@@ -48,6 +50,24 @@ public class ShootHandler : MonoBehaviour
         ShootContext context = new ShootContext()
         {
             IsHuman = isHumanPlayer,
+            Path = GetShootPath(result.Type, result.Accuracy, result.Strength, result.IsHumanPlayer),
+            Result = result,
+            Shooter = shooterData,
+        };
+        
+        // Play audio
+        AudioEvents.TriggerPlayAudioFX(AudioFXId.Shoot);
+        
+        StartCoroutine(StartShoot(context));
+    }
+
+    private void OnAIShot(ShootResult result)
+    {
+        ShooterData shooterData = _aiShooterData ;
+
+        ShootContext context = new ShootContext()
+        {
+            IsHuman = false,
             Path = GetShootPath(result.Type, result.Accuracy, result.Strength, result.IsHumanPlayer),
             Result = result,
             Shooter = shooterData,

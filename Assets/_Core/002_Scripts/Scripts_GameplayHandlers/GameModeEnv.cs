@@ -60,3 +60,10 @@ public enum GameModeOutcome
     Lose
 }
 
+public enum AIDifficulty
+{
+    Easy,
+    Normal,
+    Hard
+}
+
