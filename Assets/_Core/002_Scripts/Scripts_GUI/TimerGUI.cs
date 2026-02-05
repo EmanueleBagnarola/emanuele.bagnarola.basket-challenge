@@ -1,15 +1,11 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Handles the game mode timer UI and the end game scores panel
 /// </summary>
-public class GameModeProgressionGUI : MonoBehaviour
+public class TimerGUI : MonoBehaviour
 {
     [Header("Slider config")]
     [SerializeField] private Slider _timerSlider;
@@ -21,6 +17,8 @@ public class GameModeProgressionGUI : MonoBehaviour
     private void Awake()
     {
         GameModeEvents.OnGameModeStateUpdated += OnGameModeStateUpdated;
+        
+        _fillImage.color = _timerVisualizationColors[0];
     }
 
     private void OnDestroy()

@@ -969,7 +969,7 @@ GameObject:
   - component: {fileID: 303616806}
   - component: {fileID: 303616807}
   m_Layer: 5
-  m_Name: Gamemode Progression GUI
+  m_Name: Timer GUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1963,7 +1963,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 309.02}
-  m_SizeDelta: {x: 362, y: 300}
+  m_SizeDelta: {x: 899.28, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &522007699
 MonoBehaviour:
@@ -1985,7 +1985,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: +2
+  m_text: +2 pts
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ebbe21453a92b194e92c8963ad1381b4, type: 2}
   m_sharedMaterial: {fileID: 1801872038588569067, guid: ebbe21453a92b194e92c8963ad1381b4,
@@ -2013,12 +2013,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 287.9
+  m_fontSize: 162.2
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 296.4
+  m_fontSizeMax: 162.2
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
