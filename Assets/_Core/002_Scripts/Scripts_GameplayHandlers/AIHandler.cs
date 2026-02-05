@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class AIHandler : MonoBehaviour
 {
-    [SerializeField] private float _minShotVelocity;
-    [SerializeField] private float _maxShotVelocity;
     [SerializeField] private float _nextShotWaitTime;
     [SerializeField, NonReorderable] private List<AIDifficultyConfig> _difficultyConfigs;
 
@@ -59,10 +57,11 @@ public class AIHandler : MonoBehaviour
     private IEnumerator ShootAttempt(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
-        
+
+        // Get a random shoot type (Direct or Backboard)
         ShootType randomShootType = (ShootType)UnityEngine.Random.Range(0, Enum.GetValues(typeof(ShootType)).Length);
 
-
+        // Generate the simulated result
         ShootResult aiShotResult = new ShootResult(
             randomShootType,
             GetShootAccuracy(),
@@ -70,10 +69,12 @@ public class AIHandler : MonoBehaviour
             false);
         
         GameModeEvents.TriggerAIShot(aiShotResult);
-
-        // GameModeEvents.TriggerShootAttempt(UnityEngine.Random.Range(_minShotVelocity, _maxShotVelocity), false);
     }
     
+    /// <summary>
+    /// Get the simulated accuracy type choosing from the configuration settings set by difficulty
+    /// </summary>
+    /// <returns></returns>
     private ShootAccuracy GetShootAccuracy()
     {
         int totalWeight = 0;

@@ -23,6 +23,7 @@ public class NotificationsGUI : MonoBehaviour
 
     private void OnShowNotification(NotificationType notificationType)
     {
+        // Create the notification label and initialize it with the message
         GameObject notificationLabelObj = Instantiate(_notificationLabelPrefab, _notificationsContainer);
         NotificationLabel notificationLabel = notificationLabelObj.GetComponent<NotificationLabel>();
         if (notificationLabel != null)

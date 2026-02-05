@@ -118,14 +118,18 @@ public class GameModeManager : MonoBehaviour
 
         if (_currentGameModeTimer <= 0)
         {
+            // If both player are not attempting a shot, call end game
             if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot
                && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.WaitForShot)
                 UpdateGameModeState(GameModeState.End);
             
+            // If both players completed the shot, call end game
             if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed
                && RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Completed)
                 UpdateGameModeState(GameModeState.End);
             
+            // If at least one player has attempted a shot, set the state to WaitForEnd and handle the end game
+            // next time the current shot score is handled
             if(RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started
                || RuntimeServices.GameModeService.HumanPlayerState.ShootPhase == PlayerShootPhase.Started)
                 UpdateGameModeState(GameModeState.WaitForEnd);
@@ -173,6 +177,7 @@ public class GameModeManager : MonoBehaviour
         switch (gameModeState)
         {
             case GameModeState.Playing:
+                // reset the total timer and enable the bool that lets timer count down
                 _currentGameModeTimer = RuntimeServices.GameModeService.GameModeSettings.GameModeDuration;
                 _gameModeTimerStarted = true;
                 break;
@@ -252,6 +257,7 @@ public class GameModeManager : MonoBehaviour
         if(!isHumanPlayer)
             return;
         
+        // If a shot was being processed while the timer reached 0, end the game when the score is updated
         if(RuntimeServices.GameModeService.GameModeState == GameModeState.WaitForEnd)
         {
             UpdateGameModeState(GameModeState.End);
